@@ -77,7 +77,7 @@ Answered, and the answer is negative. The coefficient detects contamination rath
 
 Three things are carried forward. None of them blocks anything, and none of them is a ticket yet.
 
-1. **Tell Natalie and Arnab.** Email 3 said *"until I show the estimate predicts measured behaviour, a screen built on it is a proposal, not an instrument."* The hedge held. What is owed now is the number — raw 0.522, excess 0.085 with an interval straddling zero — not a retraction. The direct-exposure critique is untouched. Email 1 has been unanswered since 2026-10-31, so 2 and 3 stay queued.
+1. **Report the number.** The proposal said *"until I show the estimate predicts measured behaviour, a screen built on it is a proposal, not an instrument."* The hedge held. What is owed now is the number — raw 0.522, excess 0.085 with an interval straddling zero — not a retraction. The direct-exposure critique is untouched.
 
 2. **Decide which card opens next, and the two candidates this line used to name are both spent.** It read *"T-005, or the post-hoc reading in [E-001]"*. T-005 was **answered on 2026-11-01** by [E-004] / C-004 — the coefficient is blind to the subject and sighted only on the relation, far-field excess +0.0002 against the near field's +0.8439 — and the scope sentence it was meant to license is written, in the paper's abstract and on the overview page. The post-hoc reading was **run as C-002 on 2026-10-31** on a pre-stated test: identity is worth 0.0583 against content's 0.0009, sixty-five to one. *Corrected 2026-11-09 [O-003]: this item was carried forward verbatim when the section was rewritten, without checking either candidate. Both had been closed for over a week.*
 

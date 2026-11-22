@@ -244,7 +244,7 @@ T-005's falsifier asked for the far-field coefficient "against the different-sub
 **4. WHAT IS AFFECTED.**
 - T-005 closes, and with it the scope claim on the whole instrument: **contamination detector, not propagation detector**. That sentence is currently unwritten anywhere, which is the thing worth fixing — C-001 denied that the coefficient predicts effect, and this says where it is blind.
 - [E-039]'s decision entry gains the control it names as missing, or a correction.
-- `notes/email-3-direct-exposure.md`, unsent. Its MQuAKE paragraph currently rests on counting prompt strings; this is the measured version.
+- The direct-exposure critique of MQuAKE, which currently rests on counting prompt strings; this is the measured version.
 - If hop-2 comes back **above** its own floor, [E-039]'s "the floor is not an artifact of how either control was built" is weakened, and the two convergent floors become two floors that happen to agree on other corpora.
 
 **5. CONCLUSION IF WE DO IT.** Three branches.
@@ -302,7 +302,7 @@ The two-route reading is assembled from three experiments built for other questi
 **4. WHAT IS AFFECTED.**
 - T-007 becomes answered or dropped.
 - The **[E-013] scope note** appended to `edit-slice/agents/shared/decisions.md`, which currently rests on comparing [E-002] against [E-014] *across* probe sets. This decides whether it can rest on one.
-- `edit-slice/notes/email-3-direct-exposure.md`, unsent. Its behavioural leg is destruction only.
+- The direct-exposure critique, whose behavioural leg is destruction only.
 - [E-014]'s 67% / 5% is either replicated on a second probe set or contradicted.
 
 **5. CONCLUSION IF WE DO IT.** Three branches, written before the run.
@@ -312,7 +312,7 @@ The two-route reading is assembled from three experiments built for other questi
 - **If all three arms sit near zero:** these probes have no measurable destination at all, and the 495-probe set cannot answer the question. That would mean [E-002]'s movement numbers record destruction with nowhere identifiable for the mass to go — which needs recording before anything leans on them. **This is the branch that costs the most.**
 
 **6. CONSEQUENCE OF NOT DOING IT.**
-The two-route reading stays a story told across three experiments, the [E-013] scope note stays cross-set, and email 3 goes out with one behavioural leg instead of two.
+The two-route reading stays a story told across three experiments, the [E-013] scope note stays cross-set, and the direct-exposure critique stands on one behavioural leg instead of two.
 
 **Controls, and what could make this wrong. Three were checked before the run rather than after.**
 
@@ -361,17 +361,17 @@ We do not know whether an edit moves a probe because of *what it said* or becaus
 
 **4. WHAT IS AFFECTED.**
 - The post-hoc reading recorded in [E-001] — that subject-keyed movement may be the phenomenon rather than the confound — either becomes a pre-stated result or dies. It may not be used either way until this closes.
-- `notes/email-3-direct-exposure.md`, unsent. Its critique currently rests on **counting** whether the edited subject appears in a prompt. This decides whether it can also rest on behaviour.
+- The direct-exposure critique, which currently rests on **counting** whether the edited subject appears in a prompt. This decides whether it can also rest on behaviour.
 - [E-013]'s control design in edit-slice: if movement is subject-keyed, the same-subject control removes signal rather than noise *for this class of question*, which is a scope note that belongs on that decision.
 
 **5. CONCLUSION IF WE DO IT.** Three branches, because the third is the one that would hurt and it has to be written down before the run.
 
-- **If `real ≈ ctl` and both ≫ `different-subject`:** movement is keyed on the subject, not the content. Direct exposure is then demonstrable in behaviour and not only in prompt-counting, and email 3 gains a second leg. The same-subject control gets a scope note in [E-013].
+- **If `real ≈ ctl` and both ≫ `different-subject`:** movement is keyed on the subject, not the content. Direct exposure is then demonstrable in behaviour and not only in prompt-counting, and the direct-exposure critique gains a second leg. The same-subject control gets a scope note in [E-013].
 - **If `real` is meaningfully above `ctl`:** content does matter, [E-001]'s post-hoc reading is wrong and is struck from the record rather than left standing, and the conclusion that the coefficient fails to predict effect gets *stronger* — it had content to predict and did not.
 - **If all three arms are alike, different-subject included:** we are measuring generic instability and nothing is keyed on anything. That would undercut [E-001]'s raw 0.522 as well as the behavioural half of the critique, and it would mean the floor arms in every prior run need re-reading. **This is the branch that costs the most and it is the reason the arm is worth running.**
 
 **6. CONSEQUENCE OF NOT DOING IT.**
-[E-001]'s most interesting sentence stays post-hoc and therefore unusable, email 3 goes out resting on arithmetic over prompt strings alone, and we would hold a finding we cannot name without over-reading it.
+[E-001]'s most interesting sentence stays post-hoc and therefore unusable, the direct-exposure critique rests on arithmetic over prompt strings alone, and we would hold a finding we cannot name without over-reading it.
 
 **Controls and what could make this wrong.**
 - **Magnitude.** Edits differ in `norm_ratio`. B's edit must be matched to A's in magnitude or a weak different-subject arm proves nothing. Pair by closest `norm_ratio`, record the residual spread, and report it.
@@ -414,16 +414,16 @@ For each of the 42 subjects used in [E-014]/[E-016] and a fixed probe set, compu
 We do not currently know whether the coefficient carries any behavioural content. After this we have a correlation with an interval, over 42 × k pairs, and we know whether a threshold can be set on it at all.
 
 **4. WHAT IS AFFECTED.**
-- The email sent to Natalie and Arnab on 2026-10-31 (`ai/edit-slice/notes/email-3-direct-exposure.md`), which proposes a pre-edit screen.
+- The pre-edit screen proposal, stated in writing on 2026-10-31.
 - `ai/edit-slice/CLAUDE.md`, "Probe generation": *"If predicted and measured rankings correlate, cheap predictor plus mechanistic story. If they diverge, that divergence is the finding."*
 - The standing sentence "a screen built on it is a proposal, not an instrument" either resolves or hardens into a permanent limit.
 
 **5. CONCLUSION IF WE DO IT.**
 - **If the correlation holds** (ρ ≥ 0.5 after removing the per-probe baseline): the coefficient is a usable pre-edit triage signal, a cut can be chosen, and the next card reports false-positive and false-negative rates at that cut. Only then is the word "screen" earned.
-- **If it does not** (ρ near zero, or the interval spans zero): the coefficient is a delivery statistic with no behavioural meaning. The screen proposal is withdrawn with Natalie and Arnab in writing. Note what survives either way: the direct-exposure critique of RippleEdits falls back to **counting** whether the edited subject appears in the prompt, which needs no coefficient and is unaffected by this result.
+- **If it does not** (ρ near zero, or the interval spans zero): the coefficient is a delivery statistic with no behavioural meaning. The screen proposal is withdrawn in writing. Note what survives either way: the direct-exposure critique of RippleEdits falls back to **counting** whether the edited subject appears in the prompt, which needs no coefficient and is unaffected by this result.
 
 **6. CONSEQUENCE OF NOT DOING IT.**
-We would keep recommending a gate with no threshold and no error rates — an instruction with a verb and an object that nobody, including us, can carry out. Email 3's ask to Natalie cannot be answered by anyone until this number exists.
+We would keep recommending a gate with no threshold and no error rates — an instruction with a verb and an object that nobody, including us, can carry out. The ask that proposal makes cannot be answered by anyone until this number exists.
 
 **Closed:** 2026-10-31 — **deny branch**, on the number written in field 5 before the run.
 

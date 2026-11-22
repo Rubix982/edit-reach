@@ -36,6 +36,6 @@ The per-arm medians above make `real` look 56% above the same-subject control (0
 
 ## What it settles
 
-A probe moves because an edit happened to its subject, almost regardless of what the edit said. **Direct exposure is demonstrable in behaviour, not only by counting prompt strings** — which is what `notes/email-3-direct-exposure.md` previously had to rest on alone.
+A probe moves because an edit happened to its subject, almost regardless of what the edit said. **Direct exposure is demonstrable in behaviour, not only by counting prompt strings** — which is what the direct-exposure critique previously had to rest on alone.
 
 [E-001] stands: the coefficient still fails to predict a particular edit's effect, and now has a reason — there is very little specific effect to predict.

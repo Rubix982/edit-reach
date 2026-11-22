@@ -100,7 +100,7 @@ _Date: 2026-10-31_
 
 **What this changes elsewhere.**
 
-1. **`notes/email-3-direct-exposure.md` gains a second leg.** Its critique rested on counting whether the edited subject appears in a prompt. It can now also rest on behaviour: an item moves because an edit touched its subject, nearly independent of the edit's content, which is what "the item measures exposure rather than propagation" predicts.
+1. **The direct-exposure critique gains a second leg.** It rested on counting whether the edited subject appears in a prompt. It can now also rest on behaviour: an item moves because an edit touched its subject, nearly independent of the edit's content, which is what "the item measures exposure rather than propagation" predicts.
 2. **[E-013]'s same-subject control needs a scope note** in edit-slice. It was built to separate contraction from subject-keyed leakage. Where subject-keyed leakage is the phenomenon under study, it removes the signal, which is what produced [E-001]'s excess of 0.085.
 3. **[E-001] stands unchanged.** The coefficient still fails to predict an edit's specific effect. It now has a reason: there is very little specific effect to predict.
 
