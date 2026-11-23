@@ -246,3 +246,47 @@ The effort is wound up here, not finished. What that means, field by field, so i
 **What is blocked by something outside the project.** [E-043] and [E-047] — ROME's `v*` optimisation returns `out.grad is None` on every served model. [E-004] at 405B waits on that model being WARM or HOT in `tools/ndif_catalogue.py`.
 
 **One thing that has never been checked.** The paper page's custom tooltip has never been seen rendered inside the two-column layout. There is no headless browser on this machine, and CSS multicol can clip an absolutely positioned descendant. It needs a pair of eyes on the page, not a script.
+
+## Where this stops — 2026-11-23
+
+The effort resumed after being wound up on 2026-11-22. What follows is the state at the end of that day, written so tomorrow needs no reconstruction.
+
+### Shipped, and verifiable by anyone
+
+**`editscreen` is on PyPI.** `pip install editscreen` works from a clean machine and pulls zero dependencies. Published by trusted publishing, so no API token exists anywhere. Tagged `v0.1.0a1` at https://pypi.org/project/editscreen/.
+
+The repository is at https://github.com/Rubix982/editscreen and is a sibling of this one, not a submodule of it.
+
+**`0.2.0a1` is committed but NOT released.** It adds the MQuAKE adapter and a breaking type change: `Item.edit` became `Item.edits`, a tuple, because most MQuAKE cases edit two to four facts and then ask one question. `screen_any(edits, probe)` returns the highest level any edit reaches. Nothing needs deciding to release it; it simply has not been.
+
+**The venv here was rebuilt** — torch, nnsight, `editreach`, and `editscreen` installed from the local checkout rather than PyPI, because the MQuAKE adapter is not in the released version.
+
+### Measured today
+
+[E-048] is closed with a number. Two MQuAKE variants differ forty-fold in how often a question names the edited entity: 1.6% on MQuAKE-T, 67.8% on MQuAKE-CF-3k, across 42,258 questions. The cause is edit placement — MQuAKE-CF puts the edit at the chain head in about 65% of cases, MQuAKE-T in 0.4%.
+
+**Half of that result is not a finding and the summary says so.** A multi-hop question must name the entity it starts from, so "the head was edited" and "the question names an edited entity" are nearly the same statement. The part that survives is the claim about construction: two files published under one benchmark's name place their edits differently, and that accounts for the gap.
+
+It was not pre-registered. The direction was known from four hand-read verdicts before the cross-tabulation was written. Recorded as such in both the summary and the result file's `pre_registered: false`.
+
+### The one thing blocking everything downstream
+
+**The matchers are unvalidated.** No precision, no recall. [E-048] therefore produces a table that reads as quotable and explicitly is not, and `editscreen`'s own README and changelog say the same about every rate it prints.
+
+Closing this means hand-labelling a few hundred real items into `editscreen/validation/`. One decision is already made and should be kept: **sample from both MQuAKE variants**, because 1.6% and 67.8% are opposite regimes and labelling only the counterfactual files would measure the matchers only where they fire constantly.
+
+### Two clones, and the pointer between them is stale
+
+This repository has two checkouts on this machine, exactly the hazard `ai/CLAUDE.md` describes for research-craft:
+
+- `~/code/edit-reach` — where today's work happened, pushed, at `674bc10`
+- `open-concept-lab/ai/edit-reach` — the submodule, pinned at `2fd3964`
+
+**The submodule does not contain [E-048].** Bumping it needs a pull in the submodule and a commit in `open-concept-lab`. Until then the notebook site is built against a version of this project from before today.
+
+### Open and resumable
+
+- The RippleEdits adapter, scoped but unwritten. Subject labels are recoverable from the corpus itself with no knowledge base, at **80.3% of entries** — 75.0% on `recent` against 85.0% on `random`, so coverage must be reported per subset and never pooled. Two bugs from the original implementation must be carried over deliberately: candidates sorted before `max` (two runs once differed by 15 prompts), and the longest-candidate rule (taking the first left a third of the corpus unclassifiable).
+- The paper page makes a claim from one benchmark that now has a second. It has not been told.
+- C-009 remains parked, unchanged. [T-009] and [T-013] remain open. 128 papers remain `to-read`.
+- [E-043]/[E-047] remain blocked on `v*` returning `out.grad is None` on every NDIF-served model. Every second editing method sits behind that. Nothing today touched it, and nothing today needed to.
