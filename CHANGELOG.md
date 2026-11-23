@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-23 · Session 7 — a second benchmark, screened without a model
+
+- [E-048] Two MQuAKE variants differ 40-fold in how often a question names the edited entity — 1.6% on MQuAKE-T against 67.8% on MQuAKE-CF-3k, over 42,258 questions. The cause is where the edit is placed: MQuAKE-CF puts it at the chain head in ~65% of cases, MQuAKE-T in 0.4%. Run with `editscreen` 0.2.0a1 (commit 0893bfc); no model, no gradients, so unblocked by [E-043]/[E-047]. `results/E-048-mquake-exposure.json`, `results/E-048-summary.md`, `agents/engineer/workspace/run_e048_mquake_exposure.py`
+- The venv deleted during the move to its own repository was rebuilt, with `editscreen` added alongside the model stack
+
 ## 2026-11-09 · Session 5 — the page becomes a paper
 
 - [D-007] The notebook sidebar written by hand and the edit-reach page split — `web/sidebars.ts`, `web/notebook/edit-reach/`

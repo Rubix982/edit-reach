@@ -1,0 +1,142 @@
+{
+  "ticket": "E-048",
+  "date": "2026-11-23",
+  "question": "does a MQuAKE question name a subject its case edited, and does that track whether the edit sits on the chain head?",
+  "pre_registered": false,
+  "matchers_validated": false,
+  "editscreen_version": "0.2.0a1",
+  "editscreen_commit": "0893bfcc402f2708ddc9a1b2f5df25affee9258a",
+  "matcher_version": "0.1.0",
+  "python": "3.14.0+",
+  "model": null,
+  "gradients": false,
+  "note": "Exposure is a property of how the item was written. No model is loaded and nothing is edited, so this is unaffected by the [E-043]/[E-047] gradient failure. STRICT is a lower bound: the true exposure is higher than reported, never lower.",
+  "files": [
+    {
+      "file": "MQuAKE-T.json",
+      "sha256": "58500a1d4aaf9e036c23a1d9dd6be2d73d693e35a695614842f211ea5aff59f2",
+      "n_cases": 1868,
+      "n_questions": 5604,
+      "levels": {
+        "CLEAN": 5516,
+        "ALIAS": 67,
+        "STRICT": 21
+      },
+      "exposure_rate_strict_or_above": 0.0157,
+      "by_hops": {
+        "2-hop": {
+          "exposed": 53,
+          "total": 4263,
+          "rate": 0.0124
+        },
+        "3-hop": {
+          "exposed": 35,
+          "total": 1335,
+          "rate": 0.0262
+        },
+        "4-hop": {
+          "exposed": 0,
+          "total": 6,
+          "rate": 0.0
+        }
+      },
+      "cross_tabulation": {
+        "head_edited": {
+          "exposed": 21,
+          "total": 21,
+          "rate": 1.0
+        },
+        "head_not_edited": {
+          "exposed": 67,
+          "total": 5583,
+          "rate": 0.012
+        }
+      },
+      "cases_with_unreadable_chain_head": 0
+    },
+    {
+      "file": "MQuAKE-CF-3k.json",
+      "sha256": "ce27a39c39f2983512b9b5578fadea5fbe352e5368f49d64f38d37ce304edc80",
+      "n_cases": 3000,
+      "n_questions": 9000,
+      "levels": {
+        "STRICT": 5887,
+        "CLEAN": 2899,
+        "ALIAS": 214
+      },
+      "exposure_rate_strict_or_above": 0.6779,
+      "by_hops": {
+        "2-hop": {
+          "exposed": 2109,
+          "total": 3000,
+          "rate": 0.703
+        },
+        "3-hop": {
+          "exposed": 2098,
+          "total": 3000,
+          "rate": 0.6993
+        },
+        "4-hop": {
+          "exposed": 1894,
+          "total": 3000,
+          "rate": 0.6313
+        }
+      },
+      "cross_tabulation": {
+        "head_edited": {
+          "exposed": 5852,
+          "total": 5859,
+          "rate": 0.9988
+        },
+        "head_not_edited": {
+          "exposed": 249,
+          "total": 3141,
+          "rate": 0.0793
+        }
+      },
+      "cases_with_unreadable_chain_head": 0
+    },
+    {
+      "file": "MQuAKE-CF.json",
+      "sha256": "fbf1ab9e5243e52da429f7636990096ae0b5f8fbf60f1d4d3a4bf0c9214cd6ea",
+      "n_cases": 9218,
+      "n_questions": 27654,
+      "levels": {
+        "CLEAN": 9059,
+        "STRICT": 17986,
+        "ALIAS": 609
+      },
+      "exposure_rate_strict_or_above": 0.6724,
+      "by_hops": {
+        "2-hop": {
+          "exposed": 10456,
+          "total": 14637,
+          "rate": 0.7144
+        },
+        "3-hop": {
+          "exposed": 5044,
+          "total": 7605,
+          "rate": 0.6632
+        },
+        "4-hop": {
+          "exposed": 3095,
+          "total": 5412,
+          "rate": 0.5719
+        }
+      },
+      "cross_tabulation": {
+        "head_edited": {
+          "exposed": 17917,
+          "total": 17922,
+          "rate": 0.9997
+        },
+        "head_not_edited": {
+          "exposed": 678,
+          "total": 9732,
+          "rate": 0.0697
+        }
+      },
+      "cases_with_unreadable_chain_head": 0
+    }
+  ]
+}
