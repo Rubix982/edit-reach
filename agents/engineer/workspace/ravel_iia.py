@@ -284,8 +284,15 @@ def generate_batched(model, tokenizer, prompts: list[str], indices: list[int],
             idx = torch.tensor(pos, device=resid.device)
             rows = torch.arange(len(pos), device=resid.device)
             resid[rows, idx, :] = vectors.to(resid.device).to(resid.dtype)
-            logits = model.lm_head.output[:, -1, :].save()
-        nxt = logits.argmax(dim=-1).tolist()
+            # **Take the argmax REMOTELY.** `remote.py` says it in its own first
+            # paragraph - "only scalars come back over the wire, never a
+            # 128k-vocab logit tensor" - and saving the logits instead ignored
+            # it. Measured: a batch-16 step shipped ~3.1MB and the round trip
+            # took 9.7s against the 2.39s a small trace costs, so four fifths of
+            # the wall clock was transport for a tensor whose only use was one
+            # argmax. The argmax is B integers.
+            nxt = model.lm_head.output[:, -1, :].argmax(dim=-1).save()
+        nxt = nxt.tolist()
         for n, t in enumerate(nxt):
             if done[n]:
                 continue
