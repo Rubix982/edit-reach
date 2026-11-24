@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-24 · Session 8 — the screen gets measured, and E-048 is revised
+
+- [E-048] **re-opened and revised.** Session 7's entry below stands as what was recorded then and is now superseded. The matchers it ran on were unvalidated; 261 MQuAKE items have since been hand-labelled, the derived-alias rule was found right 57.1% [45.1, 69.0] of the time, and it was fixed to 90.2% [80.5, 97.6] on a held-out draw. Corrected rates: **0.37% on MQuAKE-T against 65.4% on MQuAKE-CF-3k on the strict rule, a 177-fold gap**, or 0.82% against 67.0% including name variants, an 82-fold gap. The explanation is unchanged — MQuAKE-CF puts the edit at the chain head in ~65% of cases, MQuAKE-T in 0.4%.
+  **RCA:** the original closed with a number produced by a rule nobody had checked. The strict-only rate was identical before and after the correction, so a summary headlining strict would have needed no revision at all; the one that combined strict with alias did. Run with `editscreen` 0.2.0a2 (commit 3bb1c9e), `matcher_version` 0.2.0. `results/E-048-summary.md` carries the revision note and the before/after table.
+- `editscreen` gained `validation/`: a stratified sampler, a scorer with bootstrap intervals reweighted by stratum size, a one-item-at-a-time labeller, and a held-out set. A 25-item subset is drawn for a human to label blind and is **not yet filled in**, so every precision figure above currently reads "agreement with one labeller".
+- Two defects found and fixed in `editscreen` along the way: a multi-edit verdict that depended on the order the edits arrived in, and MQuAKE item ids that collided across released files because `case_id` restarts at 0 in each.
+
 ## 2026-11-23 · Session 7 — a second benchmark, screened without a model
 
 - [E-048] Two MQuAKE variants differ 40-fold in how often a question names the edited entity — 1.6% on MQuAKE-T against 67.8% on MQuAKE-CF-3k, over 42,258 questions. The cause is where the edit is placed: MQuAKE-CF puts it at the chain head in ~65% of cases, MQuAKE-T in 0.4%. Run with `editscreen` 0.2.0a1 (commit 0893bfc); no model, no gradients, so unblocked by [E-043]/[E-047]. `results/E-048-mquake-exposure.json`, `results/E-048-summary.md`, `agents/engineer/workspace/run_e048_mquake_exposure.py`

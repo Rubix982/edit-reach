@@ -290,3 +290,13 @@ This repository has two checkouts on this machine, exactly the hazard `ai/CLAUDE
 - The paper page makes a claim from one benchmark that now has a second. It has not been told.
 - C-009 remains parked, unchanged. [T-009] and [T-013] remain open. 128 papers remain `to-read`.
 - [E-043]/[E-047] remain blocked on `v*` returning `out.grad is None` on every NDIF-served model. Every second editing method sits behind that. Nothing today touched it, and nothing today needed to.
+
+## What the measurement changed — 2026-11-24
+
+**The one thing blocking everything downstream is no longer blocking it.** The matchers have precision. 261 MQuAKE items were labelled against a stratified draw, sampled from both variants as the note above insisted. The strict rule was right in every case. The derived-alias rule was right **57.1% [45.1, 69.0]** — it reduced names to generic words, matching "country music" against "a genre of music", and matched the tail of other people's names, taking "Nicolae Ceaușescu" for Elena. Fixed, it is **90.2% [80.5, 97.6]** on a held-out draw made after the fix was committed.
+
+**[E-048]'s number was wrong and is revised.** The forty-fold gap recorded above was 43-fold on unvalidated matchers. Corrected it is **177-fold on the strict rule** — 0.37% against 65.4% — or 82-fold including name variants. The explanation did not change.
+
+**The strict rate did not move.** 0.37% and 65.4% before the correction and after. Everything quoted beside it did. That is the first evidence for headlining the undeniable rule that does not come from reasoning about the rule in the abstract, and it is the sentence to keep from today.
+
+**Still open.** The 25-item human subset is drawn and unfilled, so the precision figures are agreement with a model labeller and nothing more. Two alias failure modes survive on the held-out set and were deliberately left alone — a given name shared with another person, and a brand two steps from the person it is named for — because fixing them against that set would spend it. The RippleEdits adapter is unchanged and still scoped. The paper page still has not been told it has a second benchmark.
