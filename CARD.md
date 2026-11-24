@@ -95,9 +95,18 @@ The adapter ships and produces three numbers nobody may quote, which makes it de
 
 ## C-009 · Is the site where these edits go in a site where the attribute actually lives?
 
-**Status:** parked
+**Status:** blocked
 **Opened:** 2026-11-15
 **Parked:** 2026-11-22 — written in full, never run. The effort was wound up while the card was still open, so it is parked rather than closed: nothing about it has been decided and nothing needs re-deciding to resume. The three branches and the 5-point threshold below were fixed before any RAVEL number on this setup was looked at, and they still are.
+
+**Blocked: 2026-11-24 — the cost line is wrong, and field 2 names code that has moved.** Checked before resuming, not discovered part-way in.
+
+- **The track's code is no longer in MIB's own repository.** `aaronmueller/MIB` now points the causal variable localization track at [`atticusg/CausalAbstraction`](https://github.com/atticusg/CausalAbstraction), which has been reworked into a protocol-JSON CLI (`causalab run <protocol>.json`). Field 2's *"run MIB's RAVEL causal-variable evaluation"* names an entry point that no longer exists in the place the card points at.
+- **There is no supported remote path.** The cost line says *"through NDIF"*. That repository's compute table reads **"Remote runs on large models; the guide is a placeholder"**, linking a `docs/ndif.md` that is exactly that. So the way this card assumed Llama-3.1-8B would be reached is not available.
+- **The README names only DBM and DAS**, both trained by gradient descent. It does not name the **Full Vector** no-featurizer baseline that field 2 asks for. The paper reports it in Table 3g, so it presumably exists in the code; it is not documented, and that has to be read out of the source before the card can state what it is running.
+- **What is NOT the blocker, and this is the useful half.** The `out.grad is None` failure that stopped [E-043] and [E-047] does not reach this card. An interchange intervention is forward-only — the repository's own quick start describes its patching work as *"two forward passes per example"* — and the gradient requirement attaches to DBM and DAS, which this card does not use. **The blocking question is where the model runs, not whether a backward pass works.**
+
+**Three ways out, and the choice is not a detail.** Run the 8B locally, which this project has never done and which the machine may not hold. Reimplement the Full Vector interchange intervention with nnsight on NDIF, which is how every reading in this paper was taken and needs no gradients — but which turns field 3's *"externally scored ... from a benchmark nobody here built"* into our own implementation over their data and splits, and that is a real cost to the claim. Or drop to a smaller MIB model, which loses comparability with the layer-5 Llama-3.1-8B edit site that is the whole point of the card. **Until one is chosen, field 2 cannot be executed as written.**
 
 **1. WHERE WE ARE.**
 This project closed negative: the coefficient detects contamination, not propagation (C-001, C-002). Every edit here and in edit-slice is delivered at Llama-3.1-8B **layer 5**, on the subject's **last token** — a choice inherited from ROME and never tested in either project. MIB's RAVEL task (Mueller et al., ICML 2025, arXiv 2504.13151, Table 3g) measures where that same model holds a city's **country, continent and language**, at the last token of the city, at every layer. Its best method, DAS, scores **75 / 58 / 63** IIA averaged over layers and **83 / 64 / 70** at its best layer.
