@@ -300,3 +300,11 @@ This repository has two checkouts on this machine, exactly the hazard `ai/CLAUDE
 **The strict rate did not move.** 0.37% and 65.4% before the correction and after. Everything quoted beside it did. That is the first evidence for headlining the undeniable rule that does not come from reasoning about the rule in the abstract, and it is the sentence to keep from today.
 
 **Still open.** The 25-item human subset is drawn and unfilled, so the precision figures are agreement with a model labeller and nothing more. Two alias failure modes survive on the held-out set and were deliberately left alone — a given name shared with another person, and a brand two steps from the person it is named for — because fixing them against that set would spend it. The RippleEdits adapter is unchanged and still scoped. The paper page still has not been told it has a second benchmark.
+
+### T-016 · What do RippleEdits' own test types look like once screened?
+
+**Status:** open
+**Parent:** [E-048]
+**Opened:** 2026-11-24
+**Question:** The `editscreen` RippleEdits adapter (0.2.0a3) runs, and its first output is not a result — nobody designed a card for it and nothing was pre-registered. Recorded here so it is not lost. On the strict rule the three subsets read **79.6% / 51.9% / 56.4%** (`recent` / `random` / `popular`), over the 75–85% of entries whose subject label could be recovered. Stratified by RippleEdits' own declared test type, two numbers stand out and want explaining rather than publishing: `Compositionality_II` is near zero everywhere (0.011 / 0.000 / 0.018), and `Subject_Aliasing` is low on the strict rule (0.163 / 0.265 / 0.114) but rises sharply once name variants count — which is what that test type is built to do, so it may be the adapter working rather than a finding.
+**Answer:** — (needs a card; the matchers' precision was measured on MQuAKE only, and RippleEdits subjects include organisations, works and non-English names, so no rate above should be quoted until that is checked)
