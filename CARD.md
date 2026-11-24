@@ -8,6 +8,42 @@ Promotion to the ten-lens Design Protocol happens only when field 4 names a load
 
 ---
 
+## C-012 · Does the rule that recovers a subject's name decide any rate the paper publishes?
+
+**Status:** closed
+**Opened:** 2026-11-24
+**Closed:** 2026-11-24 — **branch 2.** It decides a large one. Restricting the canonical pick to the five non-aliasing test types moves the strict rate **up** by 2.4, 18.8 and 9.8 points on `recent` / `random` / `popular`, where the paper had asserted the rule inflates rather than suppresses. The combined "names it or a variant" rate moves by 0.0, +0.3 and −0.2, so every prompt that changed verdict moved between STRICT and ALIAS inside the same flagged set. **The split is rule-dependent and the union is not.** `results/C-012-summary.md`; predictions committed at `6786538` before the runner was written.
+
+**C-009 was parked for this one sitting and is open again.** Recorded because the one-card rule is the rule most easily broken by a card that looked like cleanup.
+
+**1. WHERE WE ARE.**
+[C-011] found that 682 of 1,067 `Subject_Aliasing` strict hits are circular: the adapter takes the longest subject-shaped string across all six test types as the canonical subject, so an alias lifted out of an aliasing prompt can become the subject, and the screen then reports that same prompt as naming it. §5.8 of the paper says this inflates that one test type's strict rate and not the alias rate. That sentence was written without a count.
+
+**2. WHAT WE ARE DOING.**
+Score all three released RippleEdits subsets three times — as shipped; with the canonical pick restricted to the five non-aliasing types while every candidate is still passed on as an alias (R1); and with the whole candidate pool restricted (R2) — and report, for each, the entries covered, the strict rate, the strict-or-variant rate, and the strict rate per declared test type.
+
+**3. WHY.**
+We do not know whether any number in §5.8 is a property of RippleEdits or of the string the screen happened to pick. The circularity is the only part of the recovery rule anyone has looked at, and it is the part that raises one rate; nobody has asked what the same rule does to the other five.
+
+**4. WHAT IS AFFECTED.** *(written before the work)*
+§5.8's per-subset table and its per-test-type table, limitation 14, and [F-17]'s falsifier thresholds. `editscreen`'s `validation/README.md`, which records the circularity and says it is left unfixed. **Nothing measured on MQuAKE is touched** — MQuAKE hands the screen a subject string and has no recovery step.
+
+**5. CONCLUSION IF WE DO IT.** *(three branches, fixed in advance)*
+- **If no published rate outside `Subject_Aliasing` moves by more than its stated precision:** the circularity is confined to one test type, §5.8's expectation is confirmed with a number, and limitation 14 stands as written with its scope measured rather than argued.
+- **If a subset rate moves materially:** the published table is partly manufactured, and §5.8 reports the restricted-pool number beside the released one.
+- **If coverage falls by more than three points:** the restriction is not free, the trade is coverage against circularity, and both numbers are reported rather than one chosen.
+
+**6. CONSEQUENCE OF NOT DOING IT.**
+The paper publishes three rates over a corpus that does not give it a subject string, with a prose sentence asserting that the recovery rule does not affect them, and no count behind the sentence. A reader who runs the screen with any other reasonable recovery rule gets different numbers and no way to tell which of us is wrong.
+
+**Controls, and what could make this wrong.**
+- **The two restrictions are separated**, because R2 also discards genuine name variants that `Subject_Aliasing` exists to supply, so a fall in R2's alias rate is the restriction working as designed and says nothing about the published numbers. R1 is the counterfactual the published rates are judged against.
+- **The adapter's own candidate reader is reused** over doctored copies of each entry, rather than a second copy of its patterns that could drift.
+- **R1's precision is not measured, and the card does not claim it.** The 180-item labelled set was drawn stratified by the *released* rule's verdicts, so it cannot be reweighted to score R1. Where the two rules disagree and the entry's Wikidata label can adjudicate, R1 wins 6 to 1 over 33 cases with 24 ties — directional, small, and not a precision figure. [T-019] holds the draw that would make it one.
+- **Cost.** No model, no gradients, no network. Three passes over three files already on disk.
+
+---
+
 ## C-011 · Does a screen verdict mean the same thing on each of RippleEdits' six test types?
 
 **Status:** closed

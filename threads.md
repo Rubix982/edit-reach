@@ -311,11 +311,11 @@ This repository has two checkouts on this machine, exactly the hazard `ai/CLAUDE
 
 ### T-017 · Does the adapter's longest-candidate rule pick an alias over the canonical name, and how often does that matter?
 
-**Status:** open
+**Status:** answered
 **Parent:** [T-016]
 **Opened:** 2026-11-24
 **Question:** [C-011] found that 682 of 1,067 `Subject_Aliasing` strict hits are circular — the adapter recovered the subject label out of an aliasing prompt and then reported that same prompt as naming the subject. 78% on `random`, 34% on `recent`. The recovery takes the longest candidate across all six test types, and an alias is often the longest string an entry offers, so the canonical name can lose to it. [C-010] could not see this: `w` was adjudicated per entry against the Wikidata label, and an alias **is** a name of the same entity, so the adjudication passes while the verdict on that one prompt is manufactured. Two things to settle, and the second is the one with teeth. How often does the recovered label differ from the entry's Wikidata label? And does restricting the candidate pool to the four non-aliasing types change any published rate — it would remove 682 strict hits out of 38,092 prompts, 1.8%, so the answer is probably no and that needs showing rather than assuming.
-**Answer:** —
+**Answer:** Answered by [C-012] on 2026-11-24, and **the second question came back the opposite way round.** Restricting the canonical pick to the five non-aliasing test types moves the strict rate **up** — 0.796→0.820, 0.519→0.707, 0.564→0.662 on `recent` / `random` / `popular` — where the thread and §5.8 both expected the circularity to be inflating it. The circular hits are real and are the smaller half of what the rule does: the longest candidate an entry offers is often a long formal variant taken from an aliasing prompt (`Theodore Vonkurnatowski` where every other prompt says `Theo Vonkurnatowski`), and once that is canonical the prompts that *do* name the subject read ALIAS instead of STRICT. On the first question, the recovered label differs from the entry's Wikidata label often enough to matter: R1 relabels 19.9% of `random`'s entries against 3.2% of `recent`'s, which is exactly why `random` moved four times as far. **The one thing that did not move is the union:** strict-or-variant changed by 0.0, +0.3 and −0.2 points, so every reclassified prompt stayed inside the flagged set. See `results/C-012-summary.md`. What is now open is which rule to publish, which is [T-019], because R1's precision has never been measured.
 
 ### T-018 · Does our own Full Vector implementation reproduce MIB's published number for it?
 
@@ -323,4 +323,13 @@ This repository has two checkouts on this machine, exactly the hazard `ai/CLAUDE
 **Parent:** [C-009]
 **Opened:** 2026-11-24
 **Question:** C-009's model path was decided on 2026-11-24: the Full Vector interchange intervention is reimplemented with nnsight against the NDIF-served Llama-3.1-8B, because MIB's code has moved to `atticusg/CausalAbstraction` and that repository documents no supported remote path. The cost is that the number stops being externally scored — their data, their splits, their metric, our code. This thread holds the one check that buys most of it back. Run the implementation against whatever MIB's paper reports for Full Vector on this model **before** any layer-5 reading is taken, and compare. Two things have to be read first, both out of the source rather than the README: which hidden vector their Full Vector swaps and at which layer index, and what Table 3g actually reports for that baseline. A match means the layer-5 comparison inherits the benchmark's credibility; a mismatch closes C-009 on the mismatch, because an implementation that cannot reproduce a published baseline cannot be trusted to rank layers against each other.
+**Answer:** —
+
+
+### T-019 · Which recovery rule should `editscreen` publish, now that two of them disagree by eighteen points?
+
+**Status:** open
+**Parent:** [C-012]
+**Opened:** 2026-11-24
+**Question:** [C-012] showed the released longest-candidate-over-all-six-types rule and the restricted R1 rule give strict rates eighteen points apart on `random`, and that where their picks differ and Wikidata can adjudicate, R1 is right six times to one over 33 cases with 24 ties. That is not enough to switch on. Switching would also move the documented 80.3% coverage figure and publish a canonical-pick rule whose precision has never been measured, because the 180-item labelled set was drawn stratified by the released rule's verdicts and cannot be reweighted to score another. The work is a draw, not an edit: sample stratified by R1's verdicts, label blind, score, and compare precision and coverage against the released rule's. Until then the honest report is both numbers with the disagreement named, which is what §5.8 now does. A second question rides along: is there a third rule — prefer the candidate that appears in the most prompts, rather than the longest — that beats both, and would the same draw score it?
 **Answer:** —

@@ -1,0 +1,320 @@
+{
+ "card": "C-012",
+ "subsets": {
+  "recent": {
+   "entries": 1948,
+   "relabelled_by_R1": 62,
+   "variants": {
+    "released": {
+     "entries_covered": 1461,
+     "coverage": 0.75,
+     "prompts": 16315,
+     "strict": 0.7958933496782102,
+     "strict_or_alias": 0.8981305547042598,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 5361,
+       "strict": 0.9893676552881925
+      },
+      "Relation_Specificity": {
+       "n": 6570,
+       "strict": 0.8914764079147641
+      },
+      "Forgetfulness": {
+       "n": 878,
+       "strict": 0.9646924829157175
+      },
+      "Logical_Generalization": {
+       "n": 1248,
+       "strict": 0.6209935897435898
+      },
+      "Subject_Aliasing": {
+       "n": 1164,
+       "strict": 0.16323024054982818
+      },
+      "Compositionality_II": {
+       "n": 1094,
+       "strict": 0.010968921389396709
+      }
+     }
+    },
+    "R1": {
+     "entries_covered": 1460,
+     "coverage": 0.7494866529774127,
+     "prompts": 16311,
+     "strict": 0.8195083072772975,
+     "strict_or_alias": 0.8979829562871682,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 5361,
+       "strict": 0.9998134676366349
+      },
+      "Relation_Specificity": {
+       "n": 6567,
+       "strict": 0.9383280036546369
+      },
+      "Forgetfulness": {
+       "n": 878,
+       "strict": 1.0
+      },
+      "Logical_Generalization": {
+       "n": 1248,
+       "strict": 0.6434294871794872
+      },
+      "Subject_Aliasing": {
+       "n": 1163,
+       "strict": 0.1289767841788478
+      },
+      "Compositionality_II": {
+       "n": 1094,
+       "strict": 0.012797074954296161
+      }
+     }
+    },
+    "R2": {
+     "entries_covered": 1460,
+     "coverage": 0.7494866529774127,
+     "prompts": 16311,
+     "strict": 0.8195083072772975,
+     "strict_or_alias": 0.891852124333272,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 5361,
+       "strict": 0.9998134676366349
+      },
+      "Relation_Specificity": {
+       "n": 6567,
+       "strict": 0.9383280036546369
+      },
+      "Forgetfulness": {
+       "n": 878,
+       "strict": 1.0
+      },
+      "Logical_Generalization": {
+       "n": 1248,
+       "strict": 0.6434294871794872
+      },
+      "Subject_Aliasing": {
+       "n": 1163,
+       "strict": 0.1289767841788478
+      },
+      "Compositionality_II": {
+       "n": 1094,
+       "strict": 0.012797074954296161
+      }
+     }
+    }
+   }
+  },
+  "random": {
+   "entries": 1922,
+   "relabelled_by_R1": 383,
+   "variants": {
+    "released": {
+     "entries_covered": 1633,
+     "coverage": 0.8496357960457857,
+     "prompts": 11731,
+     "strict": 0.5189668399965902,
+     "strict_or_alias": 0.9016281646918421,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 2481,
+       "strict": 0.6557839580814188
+      },
+      "Relation_Specificity": {
+       "n": 3229,
+       "strict": 0.6596469495199753
+      },
+      "Forgetfulness": {
+       "n": 712,
+       "strict": 0.9971910112359551
+      },
+      "Logical_Generalization": {
+       "n": 2219,
+       "strict": 0.45065344749887337
+      },
+      "Subject_Aliasing": {
+       "n": 2344,
+       "strict": 0.26493174061433444
+      },
+      "Compositionality_II": {
+       "n": 746,
+       "strict": 0.0
+      }
+     }
+    },
+    "R1": {
+     "entries_covered": 1539,
+     "coverage": 0.8007284079084287,
+     "prompts": 11353,
+     "strict": 0.7066854575883027,
+     "strict_or_alias": 0.9051352065533339,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 2424,
+       "strict": 0.9991749174917491
+      },
+      "Relation_Specificity": {
+       "n": 3125,
+       "strict": 0.80384
+      },
+      "Forgetfulness": {
+       "n": 712,
+       "strict": 1.0
+      },
+      "Logical_Generalization": {
+       "n": 2143,
+       "strict": 0.9295380307979468
+      },
+      "Subject_Aliasing": {
+       "n": 2221,
+       "strict": 0.1728950923007654
+      },
+      "Compositionality_II": {
+       "n": 728,
+       "strict": 0.0013736263736263737
+      }
+     }
+    },
+    "R2": {
+     "entries_covered": 1539,
+     "coverage": 0.8007284079084287,
+     "prompts": 11353,
+     "strict": 0.7066854575883027,
+     "strict_or_alias": 0.8687571566986699,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 2424,
+       "strict": 0.9991749174917491
+      },
+      "Relation_Specificity": {
+       "n": 3125,
+       "strict": 0.80384
+      },
+      "Forgetfulness": {
+       "n": 712,
+       "strict": 1.0
+      },
+      "Logical_Generalization": {
+       "n": 2143,
+       "strict": 0.9295380307979468
+      },
+      "Subject_Aliasing": {
+       "n": 2221,
+       "strict": 0.1728950923007654
+      },
+      "Compositionality_II": {
+       "n": 728,
+       "strict": 0.0013736263736263737
+      }
+     }
+    }
+   }
+  },
+  "popular": {
+   "entries": 885,
+   "relabelled_by_R1": 113,
+   "variants": {
+    "released": {
+     "entries_covered": 724,
+     "coverage": 0.8180790960451978,
+     "prompts": 10046,
+     "strict": 0.5641051164642644,
+     "strict_or_alias": 0.8509854668524786,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 1158,
+       "strict": 0.8678756476683938
+      },
+      "Relation_Specificity": {
+       "n": 5169,
+       "strict": 0.7291545753530664
+      },
+      "Forgetfulness": {
+       "n": 373,
+       "strict": 0.9731903485254692
+      },
+      "Logical_Generalization": {
+       "n": 661,
+       "strict": 0.40242057488653554
+      },
+      "Subject_Aliasing": {
+       "n": 2240,
+       "strict": 0.11428571428571428
+      },
+      "Compositionality_II": {
+       "n": 445,
+       "strict": 0.017977528089887642
+      }
+     }
+    },
+    "R1": {
+     "entries_covered": 704,
+     "coverage": 0.7954802259887006,
+     "prompts": 9843,
+     "strict": 0.6621964848115411,
+     "strict_or_alias": 0.8485217921365438,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 1118,
+       "strict": 0.9937388193202147
+      },
+      "Relation_Specificity": {
+       "n": 5122,
+       "strict": 0.8779773525966419
+      },
+      "Forgetfulness": {
+       "n": 371,
+       "strict": 0.9973045822102425
+      },
+      "Logical_Generalization": {
+       "n": 601,
+       "strict": 0.6222961730449251
+      },
+      "Subject_Aliasing": {
+       "n": 2186,
+       "strict": 0.07182067703568161
+      },
+      "Compositionality_II": {
+       "n": 445,
+       "strict": 0.020224719101123594
+      }
+     }
+    },
+    "R2": {
+     "entries_covered": 704,
+     "coverage": 0.7954802259887006,
+     "prompts": 9843,
+     "strict": 0.6621964848115411,
+     "strict_or_alias": 0.8147922381387789,
+     "by_type": {
+      "Compositionality_I": {
+       "n": 1118,
+       "strict": 0.9937388193202147
+      },
+      "Relation_Specificity": {
+       "n": 5122,
+       "strict": 0.8779773525966419
+      },
+      "Forgetfulness": {
+       "n": 371,
+       "strict": 0.9973045822102425
+      },
+      "Logical_Generalization": {
+       "n": 601,
+       "strict": 0.6222961730449251
+      },
+      "Subject_Aliasing": {
+       "n": 2186,
+       "strict": 0.07182067703568161
+      },
+      "Compositionality_II": {
+       "n": 445,
+       "strict": 0.020224719101123594
+      }
+     }
+    }
+   }
+  }
+ }
+}
