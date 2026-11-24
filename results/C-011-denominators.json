@@ -1,0 +1,45 @@
+{
+ "totals": {
+  "recent": {
+   "entries": 1948,
+   "subject_recovered": 1461,
+   "coverage": 0.75,
+   "prompts": 16315,
+   "strict": 12985,
+   "rate_strict": 0.7959,
+   "rate_strict_or_alias": 0.8981
+  },
+  "random": {
+   "entries": 1922,
+   "subject_recovered": 1633,
+   "coverage": 0.8496,
+   "prompts": 11731,
+   "strict": 6088,
+   "rate_strict": 0.519,
+   "rate_strict_or_alias": 0.9016
+  },
+  "popular": {
+   "entries": 885,
+   "subject_recovered": 724,
+   "coverage": 0.8181,
+   "prompts": 10046,
+   "strict": 5667,
+   "rate_strict": 0.5641,
+   "rate_strict_or_alias": 0.851
+  }
+ },
+ "aliasing_circularity": {
+  "recent": {
+   "independent": 126,
+   "circular": 64
+  },
+  "random": {
+   "circular": 483,
+   "independent": 138
+  },
+  "popular": {
+   "circular": 135,
+   "independent": 121
+  }
+ }
+}

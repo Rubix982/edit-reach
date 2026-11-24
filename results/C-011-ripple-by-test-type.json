@@ -1,0 +1,110 @@
+{
+ "recent": {
+  "Logical_Generalization": {
+   "STRICT": 775,
+   "n": 1248,
+   "CLEAN": 354,
+   "ALIAS": 119
+  },
+  "Compositionality_I": {
+   "STRICT": 5304,
+   "n": 5361,
+   "ALIAS": 57
+  },
+  "Subject_Aliasing": {
+   "STRICT": 190,
+   "n": 1164,
+   "CLEAN": 311,
+   "ALIAS": 663
+  },
+  "Relation_Specificity": {
+   "STRICT": 5857,
+   "n": 6570,
+   "ALIAS": 713
+  },
+  "Forgetfulness": {
+   "STRICT": 847,
+   "n": 878,
+   "ALIAS": 31
+  },
+  "Compositionality_II": {
+   "CLEAN": 997,
+   "n": 1094,
+   "ALIAS": 85,
+   "STRICT": 12
+  }
+ },
+ "random": {
+  "Logical_Generalization": {
+   "ALIAS": 1056,
+   "n": 2219,
+   "STRICT": 1000,
+   "CLEAN": 163
+  },
+  "Compositionality_I": {
+   "ALIAS": 831,
+   "n": 2481,
+   "STRICT": 1627,
+   "CLEAN": 23
+  },
+  "Subject_Aliasing": {
+   "STRICT": 621,
+   "n": 2344,
+   "CLEAN": 226,
+   "ALIAS": 1497
+  },
+  "Relation_Specificity": {
+   "ALIAS": 1071,
+   "n": 3229,
+   "STRICT": 2130,
+   "CLEAN": 28
+  },
+  "Forgetfulness": {
+   "STRICT": 710,
+   "n": 712,
+   "ALIAS": 2
+  },
+  "Compositionality_II": {
+   "CLEAN": 714,
+   "n": 746,
+   "ALIAS": 32
+  }
+ },
+ "popular": {
+  "Compositionality_I": {
+   "STRICT": 1005,
+   "n": 1158,
+   "ALIAS": 153
+  },
+  "Subject_Aliasing": {
+   "CLEAN": 846,
+   "n": 2240,
+   "ALIAS": 1138,
+   "STRICT": 256
+  },
+  "Relation_Specificity": {
+   "STRICT": 3769,
+   "n": 5169,
+   "ALIAS": 1397,
+   "CLEAN": 3
+  },
+  "Forgetfulness": {
+   "STRICT": 363,
+   "n": 373,
+   "ALIAS": 8,
+   "CLEAN": 2
+  },
+  "Logical_Generalization": {
+   "ALIAS": 169,
+   "n": 661,
+   "CLEAN": 226,
+   "STRICT": 266
+  },
+  "Compositionality_II": {
+   "CLEAN": 420,
+   "n": 445,
+   "ALIAS": 17,
+   "STRICT": 8
+  }
+ }
+}

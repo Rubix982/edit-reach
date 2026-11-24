@@ -10,8 +10,13 @@ Promotion to the ten-lens Design Protocol happens only when field 4 names a load
 
 ## C-011 · Does a screen verdict mean the same thing on each of RippleEdits' six test types?
 
-**Status:** open
+**Status:** closed
 **Opened:** 2026-11-24
+**Closed:** 2026-11-24 — on branch 1 for five of the six types, and on branch 1 **for the wrong reason** on the sixth. Every prediction written down before the counts holds: the three types whose queries are about the edited subject screen at the top, the type whose queries are about a different entity screens at the bottom, and the mixed type sits between them in all three subsets. So [T-016]'s two unexplained numbers are the benchmark working as its own definitions say, and no new draw was needed to find that out — the definitions had to be read, which nobody had done. Full result in `results/C-011-summary.md`, reproducible by `results/C-011-runner.py`.
+
+**What it turned up that the predictions did not.** `Compositionality_II` is 99.1% clean rather than clean: 20 of its 2,285 prompts carry the edited name, nine outright and eleven inside a different entity's name — a son, a company and a film each named after the person whose fact was edited. And **most of `Subject_Aliasing`'s strict hits are circular**: the adapter recovers the longest candidate across all six types, so when that string is an alias lifted out of an aliasing prompt, the screen reports the same prompt as naming the subject. 78% of them on `random`, 34% on `recent`. That type's count matches its prediction for the wrong reason, and it is the one place in the six where the number is the adapter's property rather than the corpus's.
+
+**What it corrected.** The three headline rates are over **test prompts** of recoverable entries — 16,315 / 11,731 / 10,046 — not over entries. §5.8 of the paper page said entries. No rate moved; the column saying what they were computed over was wrong and is fixed.
 
 **1. WHERE WE ARE.**
 [C-010] measured the screen's precision on RippleEdits **stratified by subset** and found the strict rule right 100% on all three, so the subset rates are quotable. Stratified instead by RippleEdits' own six declared test types, the same run produces two numbers nobody has explained. `Compositionality_II` screens at **0.011 / 0.000 / 0.018** across `recent` / `random` / `popular` — essentially never naming the edited subject. `Subject_Aliasing` is **0.163 / 0.265 / 0.114** on the strict rule and rises sharply once name variants count. `editscreen` prints a `by declared test type` breakdown in its own CLI output, so the package is already shipping per-type numbers that no card has checked.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-24 · Session 10
+
+- [C-011] Closed — the six RippleEdits test types screen in the order their own definitions predict, so [T-016]'s two unexplained numbers are the benchmark working rather than the adapter failing. Predictions committed before any count was read (`results/C-011-predictions.md`, `8e7d69a`); result in `results/C-011-summary.md`, reproducible by `results/C-011-runner.py`.
+- [T-016] Answered, and closed without the new draw it was expected to need.
+- [T-017] Opened — the adapter's longest-candidate rule can pick an alias over the canonical name, which makes 682 of 1,067 `Subject_Aliasing` strict hits circular.
+- The paper page gains the per-test-type table, finding F-19, limitation 14, and **a correction**: §5.8's RippleEdits rates are over test prompts (16,315 / 11,731 / 10,046), not entries. No rate moved.
+
 ## 2026-11-24 · Session 9 — the screen meets a benchmark that does not hand it the subject
 
 - [C-010] **closed on its pre-stated threshold.** 180 RippleEdits items hand-labelled, twenty from each of the three subsets crossed with the three verdicts. Strict precision is **100% on all three**, against a 95% threshold written into the card before any item was labelled, so the floor claim survives a corpus whose subject is a Wikidata QID rather than a string. The fifth label `w` — *the recovered subject is not this entry's subject* — was **never used**: across 166 distinct entries the longest-candidate recovery named the right entity every time, adjudicated against the QID the benchmark itself cites. What it gets wrong is the shape of the string, and 28 of the 180 carried a trailing clause, which costs recall and cannot cost precision. `results/C-010-summary.md`, `editscreen` 0.2.0a4 at commit 3a2d4c8.
