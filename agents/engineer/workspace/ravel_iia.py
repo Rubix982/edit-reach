@@ -151,6 +151,157 @@ def pairs(rows: list[dict], target: str, kind: str) -> tuple[list[dict], dict]:
     return out, dropped
 
 
+def entity_last_token(tokenizer, prompt: str, entity: str) -> int:
+    """Index of the final token of `entity` inside `prompt`.
+
+    Ported from MIB's `get_entity_last_token_position`, which searches with word
+    boundaries and takes the **first** match - not the last. In a few-shot RAVEL
+    prompt the exemplar city differs from the queried one, so first and last
+    coincide; `audit_positions` below checks that rather than assuming it, because
+    a prompt where they differ would intervene on the exemplar and the run would
+    simply produce a wrong number with no error anywhere.
+
+    Tokenisation follows the tokenizer's own defaults, special tokens included,
+    exactly as the original does.
+    """
+    m = re.search(r"\b" + re.escape(entity) + r"\b", prompt)
+    if m is None:
+        return -1
+    ids = tokenizer(prompt[:m.end()])["input_ids"]
+    return len(ids) - 1
+
+
+def audit_positions(tokenizer, ps: list[dict], n: int = 400) -> dict:
+    """Does the computed index really land on the end of the entity?
+
+    Three ways this can be wrong and none of them raises: the entity is absent,
+    it occurs more than once so the first match is not the queried one, or the
+    tokeniser's special tokens shift the index. Each is counted here, and the
+    last is checked by decoding the token actually selected and asking whether
+    the entity ends with it.
+    """
+    out = {"checked": 0, "missing": 0, "ambiguous": 0, "misaligned": 0,
+           "examples": []}
+    for p in ps[:n]:
+        prompt, ent = p["base_prompt"], p["base_entity"]
+        hits = list(re.finditer(r"\b" + re.escape(ent) + r"\b", prompt))
+        if not hits:
+            out["missing"] += 1
+            continue
+        if len(hits) > 1:
+            out["ambiguous"] += 1
+        i = entity_last_token(tokenizer, prompt, ent)
+        ids = tokenizer(prompt)["input_ids"]
+        if not 0 <= i < len(ids):
+            out["misaligned"] += 1
+            continue
+        tok = tokenizer.decode([ids[i]])
+        if not ent.lower().endswith(tok.strip().lower()) or not tok.strip():
+            out["misaligned"] += 1
+            if len(out["examples"]) < 5:
+                out["examples"].append((ent, repr(tok)))
+        out["checked"] += 1
+    return out
+
+
+def _blocks(model):
+    inner = getattr(model, "model", None)
+    if inner is not None and hasattr(inner, "layers"):
+        return inner.layers
+    return model.transformer.h
+
+
+def read_vector(model, prompt: str, index: int, layer: int, *, remote: bool):
+    """The residual stream after block `layer`, at one token of one prompt.
+
+    One trace, one save, bound to a plain local name. Under `remote=True` the
+    trace body executes on the server, so anything accumulated into a container
+    inside it is discarded silently - see `ravel_hook_check.py`.
+    """
+    blocks = _blocks(model)
+    with model.trace(prompt, remote=remote):
+        out = blocks[layer].output
+        vec = (out[0] if isinstance(out, tuple) else out)[0, index, :].save()
+    return vec
+
+
+def generate_patched(model, tokenizer, prompt: str, index: int, layer: int,
+                     vector, *, remote: bool, max_new_tokens: int = 6) -> str:
+    """Greedy continuation of `prompt` with one residual vector replaced.
+
+    **Why more than one token, and why this is not an optimisation.** MIB's
+    checker is a substring test over generated TEXT, and the answers are often
+    several tokens - "Dominican Republic", "United States", "Mandarin Chinese".
+    Scoring a single token marks every one of those wrong whatever the model
+    did, which would depress our number against MIB's for a reason that has
+    nothing to do with the intervention. The first probe run showed it: an
+    unintervened model answered `'Domin'`, which is right and scores as wrong.
+
+    The patch is reapplied at every step. The entity's position is fixed in the
+    prompt and stays in context as tokens are appended, so leaving it out after
+    the first step would let the model re-read the unpatched representation.
+
+    Cost is honest rather than hidden: this is `max_new_tokens` traces per
+    example, and at roughly 0.4s of queue each that sets the budget for any
+    full run.
+    """
+    text = prompt
+    for _ in range(max_new_tokens):
+        lg = patched_logits(model, text, index, layer, vector, remote=remote)
+        nxt = int(lg.argmax().item())
+        piece = tokenizer.decode(nxt)
+        if not piece:
+            break
+        text += piece
+    return text[len(prompt):]
+
+
+def patched_logits(model, prompt: str, index: int, layer: int, vector,
+                   *, remote: bool):
+    """Next-token logits for `prompt` with one residual vector replaced.
+
+    The write is to the SAME site the read came from - block `layer`'s output,
+    which `ravel_hook_check.py` established is the residual stream after block
+    `layer` and therefore where this project's layer-`layer` edit lands.
+    """
+    blocks = _blocks(model)
+    with model.trace(prompt, remote=remote):
+        out = blocks[layer].output
+        resid = out[0] if isinstance(out, tuple) else out
+        resid[0, index, :] = vector
+        logits = model.lm_head.output[0, -1, :].save()
+    return logits
+
+
+def probe_one(model, tokenizer, pair: dict, layer: int, *, remote: bool,
+              tokens: int = 6) -> dict:
+    """One base/source pair, end to end, with the unintervened answer beside it."""
+    bi = entity_last_token(tokenizer, pair["base_prompt"], pair["base_entity"])
+    si = entity_last_token(tokenizer, pair["source_prompt"], pair["source_entity"])
+    if bi < 0 or si < 0:
+        raise ValueError("entity not found in one of the prompts")
+
+    # The unintervened answer is generated the same way, by patching the site
+    # with the vector already there. Same code path, same token count, so a
+    # difference between the two columns is the intervention and not the
+    # decoding.
+    own = read_vector(model, pair["base_prompt"], bi, layer, remote=remote)
+    before = generate_patched(model, tokenizer, pair["base_prompt"], bi, layer,
+                              own, remote=remote, max_new_tokens=tokens)
+
+    vec = read_vector(model, pair["source_prompt"], si, layer, remote=remote)
+    after = generate_patched(model, tokenizer, pair["base_prompt"], bi, layer,
+                             vec, remote=remote, max_new_tokens=tokens)
+
+    return {"asked": pair["asked"], "target": pair["target"],
+            "base_entity": pair["base_entity"], "source_entity": pair["source_entity"],
+            "base_index": bi, "source_index": si,
+            "unintervened": before, "intervened": after,
+            "expected": pair["expected"],
+            "correct_before": check(before, pair["expected"]),
+            "correct": check(after, pair["expected"])}
+
+
 def selftest() -> int:
     """Everything above runs offline, so it is checked offline."""
     fails = []
@@ -187,6 +338,19 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--split", default="val")
+    ap.add_argument("--probe", type=int, default=0,
+                    help="run N pairs end to end through the model")
+    ap.add_argument("--layer", type=int, default=5)
+    ap.add_argument("--tokens", type=int, default=6,
+                    help="greedy tokens generated per example")
+    ap.add_argument("--target", default="Continent", choices=ATTRS)
+    ap.add_argument("--kind", default="prompt_template_counterfactual",
+                    choices=COUNTERFACTUALS)
+    ap.add_argument("--local", action="store_true",
+                    help="run against a local model instead of NDIF")
+    ap.add_argument("--audit", action="store_true",
+                    help="check the entity token index against the tokenizer")
+    ap.add_argument("--model", default="meta-llama/Llama-3.1-8B")
     ap.add_argument("--summary", action="store_true",
                     help="build the pairs and describe them; no model is loaded")
     args = ap.parse_args()
@@ -196,6 +360,50 @@ def main() -> int:
 
     rows = load(args.split)
     print(f"{len(rows):,} rows in {args.split}\n")
+
+    if args.probe:
+        from transformers import AutoTokenizer
+        sys.path.insert(0, "src")
+        from editreach.remote import connect
+        tok = AutoTokenizer.from_pretrained(args.model)
+        model = connect(args.model)
+        ps, _ = pairs(rows, args.target, args.kind)
+        moved = [p for p in ps if p["asked"] == args.target]
+        held = [p for p in ps if p["asked"] != args.target]
+        print(f"layer {args.layer}, target {args.target}, {args.kind}")
+        print("showing both halves of the metric: pairs the question asks about "
+              "the moved\nvariable, and pairs it does not.\n")
+        for label, pool in (("MOVED", moved), ("HELD", held)):
+            for p in pool[:args.probe]:
+                r = probe_one(model, tok, p, args.layer, remote=not args.local,
+                              tokens=args.tokens)
+                mark = "ok " if r["correct"] else "NO "
+                print(f"  {mark}[{label}] asks {r['asked']:<9} "
+                      f"{r['base_entity']!r} <- {r['source_entity']!r}")
+                print(f"      before {r['unintervened']!r}   after "
+                      f"{r['intervened']!r}   expected {r['expected']!r}")
+        return 0
+
+    if args.audit:
+        from transformers import AutoTokenizer
+        tok = AutoTokenizer.from_pretrained(args.model)
+        print(f"tokenizer: {args.model}\n")
+        print(f"{'target':<11}{'counterfactual':<32}{'checked':>9}{'missing':>9}"
+              f"{'ambiguous':>11}{'misaligned':>12}")
+        bad = 0
+        for target in ATTRS:
+            for kind in COUNTERFACTUALS:
+                ps, _ = pairs(rows, target, kind)
+                a = audit_positions(tok, ps)
+                bad += a["missing"] + a["misaligned"]
+                print(f"{target:<11}{kind:<32}{a['checked']:>9,}{a['missing']:>9,}"
+                      f"{a['ambiguous']:>11,}{a['misaligned']:>12,}")
+                for e in a["examples"]:
+                    print(f"            {e[0]!r} -> token {e[1]}")
+        print("\n" + ("PASS - the index lands on the entity's last token."
+                      if not bad else
+                      "FAIL - do not run interventions until this is clean."))
+        return 1 if bad else 0
     print(f"{'target':<11}{'counterfactual':<32}{'pairs':>8}{'moved':>8}"
           f"{'held':>8}{'degenerate':>12}{'no gold':>10}")
     for target in ATTRS:
