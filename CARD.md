@@ -8,6 +8,45 @@ Promotion to the ten-lens Design Protocol happens only when field 4 names a load
 
 ---
 
+## C-010 · Does the screen hold up on a benchmark that does not hand it the subject?
+
+**Status:** open
+**Opened:** 2026-11-24
+
+**1. WHERE WE ARE.**
+The matchers now have precision, measured on 261 hand-labelled MQuAKE items: the strict rule right **100%** of the time, the derived-alias rule **57.1% [45.1, 69.0]** before it was fixed and **90.2% [80.5, 97.6]** on a held-out draw after. **Every one of those items came from MQuAKE, and MQuAKE hands the screen its subject as a string.** RippleEdits does not — it names the subject by Wikidata QID, so `editscreen`'s adapter recovers the label from the entry's own test prompts, succeeding on 75.0% / 85.0% / 81.8% of `recent` / `random` / `popular`. The screen then reports strict rates of **79.6% / 51.9% / 56.4%** over those entries, and nothing licenses quoting them.
+
+**2. WHAT WE ARE DOING.**
+Draw a stratified sample of 180 RippleEdits items — the three subsets crossed with the strict, alias and clean verdicts — blinded as `validation/` already blinds, and label each with the four letters plus a fifth, `w`, meaning *the recovered subject label is not this entry's subject*. Then run `score.py` and report precision per rule, per subset.
+
+**3. WHY.**
+We do not know whether a strict match means what it means on MQuAKE. There, a strict hit says the given subject string is in the probe, and the only way to be wrong is a bad word boundary. Here it says a **recovered** string is in the probe, and the recovery can be wrong — it takes the longest candidate from patterns that were never built to be exact. So the 100% does not transfer, and the `w` label is what separates a matcher error from a recovery error. After this card there is a precision figure for a corpus whose subjects are organisations, works and non-English names, and a count of how often the adapter picked the wrong subject.
+
+**4. WHAT IS AFFECTED.** *(written before the work)*
+- T-016's three strict rates, which become quotable or do not.
+- `editscreen`'s README, which tells a user to quote the strict rate and justifies that on MQuAKE alone.
+- `validation/README.md`'s standing admission that "both benchmarks are MQuAKE ... precision measured here is an optimistic estimate for anything else." This replaces it with a number either way.
+- Whether RippleEdits can be the paper page's third benchmark, or only its second.
+- **Nothing in E-048 changes.** It is MQuAKE, its subjects are given rather than recovered, and no rate in it depends on this.
+
+**5. CONCLUSION IF WE DO IT.** *(threshold set before running)*
+- **If strict precision is at or above 95% on all three subsets:** the floor claim survives a corpus that did not hand it the subject, the recovery is good enough to build on, and the RippleEdits rates can be quoted on the strict rule with coverage beside them.
+- **If strict precision falls below 95% on any subset AND most failures carry `w`:** the rule is fine and the recovery is not. The floor claim becomes conditional on the benchmark supplying a subject string, the README has to say so, and the adapter needs the leftmost-`" of "` limitation revisited — which is already documented and deliberately unfixed.
+- **If strict precision falls below 95% AND the failures do not carry `w`:** the strict rule itself is weaker than MQuAKE suggested, most likely on organisation names where a short form matches inside a longer one. That is the branch that would change the headline of the whole package, and it is the reason the threshold was written down first.
+
+**6. CONSEQUENCE OF NOT DOING IT.**
+The adapter ships and produces three numbers nobody may quote, which makes it dead weight rather than an instrument. Worse, `editscreen` goes on telling users that the strict rate is the one to trust on the evidence of **one benchmark** — which is the exact criticism this project makes of everybody else's propagation results.
+
+**Controls, and what could make this wrong.**
+- **Blinded as the existing set is.** `labels.txt` carries neither the stratum nor the subset, because the screen's verdict invites agreement and the subset carries a base rate to lean on.
+- **Per subset, never pooled.** Recovery already differs by ten points across the three; a pooled precision would describe no file anyone can download.
+- **The labeller is a model** unless the human subset is filled in, so the agreement rate is reported beside every figure, as it is for the MQuAKE set.
+- **Nothing is tuned against this sample.** 0.2.0a2 scored 100% on the set its own fixes came from; the held-out draw put it at 90.2%. If a fix comes out of this card, it is committed before a second draw is made.
+- **The MQuAKE precision is not a prior to lean on.** Field 3 is the whole reason: a different thing is being measured, not the same thing again.
+- **Cost.** No model, no gradients, no network. A sampler and a scorer that already exist, and roughly an hour of labelling.
+
+---
+
 ## C-009 · Is the site where these edits go in a site where the attribute actually lives?
 
 **Status:** parked
