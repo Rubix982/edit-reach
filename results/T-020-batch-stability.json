@@ -1,0 +1,54 @@
+{
+ "thread": "T-020",
+ "n": 240,
+ "layer": 5,
+ "tokens": 6,
+ "target": "Continent",
+ "kind": "prompt_template_counterfactual",
+ "model": "meta-llama/Llama-3.1-8B",
+ "batches": [
+  16,
+  48,
+  120
+ ],
+ "iia": {
+  "16": 0.26666666666666666,
+  "48": 0.26666666666666666,
+  "120": 0.2625
+ },
+ "unintervened": {
+  "16": 0.6916666666666667,
+  "48": 0.6833333333333333,
+  "120": 0.6875
+ },
+ "seconds": {
+  "16": 774.1,
+  "48": 374.5,
+  "120": 218.9
+ },
+ "spread_points": 0.417,
+ "sampling_half_width_points": 6.326,
+ "disagreement": [
+  {
+   "a": 16,
+   "b": 48,
+   "n_diff": 0,
+   "became_correct": 0,
+   "became_wrong": 0
+  },
+  {
+   "a": 16,
+   "b": 120,
+   "n_diff": 1,
+   "became_correct": 0,
+   "became_wrong": 1
+  },
+  {
+   "a": 48,
+   "b": 120,
+   "n_diff": 1,
+   "became_correct": 0,
+   "became_wrong": 1
+  }
+ ]
+}
