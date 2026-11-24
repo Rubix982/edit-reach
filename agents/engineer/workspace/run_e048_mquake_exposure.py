@@ -34,10 +34,30 @@ after four verdicts were read by hand while building the adapter, so the
 direction was known before the number was. It is reported as a measurement that
 can now be repeated, not as a prediction that was risked.
 
-The matchers are also UNVALIDATED: no precision or recall exists for them yet,
-so every rate here inherits an unmeasured error. STRICT remains a lower bound —
-an item naming the subject only by description is counted clean — so the true
-exposure is higher than reported, never lower.
+THE MATCHERS ARE NOW MEASURED, and the first run of this script was wrong
+because they were not. 261 MQuAKE items were labelled by hand against a
+stratified draw (editscreen `validation/`). The strict rule's precision is
+100%. The derived-alias rule's was 57.1% [45.1, 69.0]: it fired on a name
+reduced to a generic word, and on the tail of a different person's name.
+Fixed, it is 90.2% [80.5, 97.6] on a held-out draw.
+
+So this script reports TWO rates per file and the first is the one to quote.
+`exposure_rate_strict` counts only the subject's own surface form, and is the
+figure that did not move when the alias rule was corrected — 0.37% on MQuAKE-T
+and 65.41% on MQuAKE-CF-3k, before and after. `exposure_rate_strict_or_alias`
+adds the alias matches and DID move, from 1.57% to 0.82% on MQuAKE-T, because
+roughly four in ten of that file's alias matches were wrong.
+
+That is the whole argument for the headline being the strict rate. A floor
+built on the undeniable rule survived a correction that moved everything
+quoted beside it.
+
+Neither rate is a lower bound on IDENTIFICATION. Hand-labelling found the
+edited subject identifiable from the probe in essentially every item of both
+files — MQuAKE renders its questions from the chain the edit sits on, so the
+subject is always picked out, named or not. What these rates measure is
+whether the question hands the model the NAME, which is a surface property and
+a different question.
 """
 from __future__ import annotations
 
@@ -137,7 +157,9 @@ def measure(path: Path) -> dict:
         "n_cases": len(cases),
         "n_questions": total,
         "levels": dict(levels),
-        "exposure_rate_strict_or_above": _rate(
+        # Two rates, and the first is the one to quote. See the header.
+        "exposure_rate_strict": _rate(levels.get("STRICT", 0), total),
+        "exposure_rate_strict_or_alias": _rate(
             levels.get("STRICT", 0) + levels.get("ALIAS", 0), total),
         "by_hops": {k: {"exposed": v[0], "total": v[1], "rate": _rate(v[0], v[1])}
                     for k, v in sorted(by_hops.items())},
@@ -180,7 +202,16 @@ def main() -> int:
         "question": "does a MQuAKE question name a subject its case edited, and "
                     "does that track whether the edit sits on the chain head?",
         "pre_registered": False,
-        "matchers_validated": False,
+        "matchers_validated": True,
+        "matcher_precision": {
+            "strict": "1.00, 261 hand-labelled MQuAKE items",
+            "alias": "0.90 [0.81, 0.98], 47 held-out items, after the 0.2.0 fix",
+            "where": "editscreen validation/, labels.claude.txt and "
+                     "labels.holdout.txt",
+            "caveat": "labelled by a model; a human subset is drawn in "
+                      "validation/labels.human.txt and not yet filled in, so "
+                      "these carry one unmeasured error rate of their own",
+        },
         "editscreen_version": editscreen.__version__,
         "editscreen_commit": _editscreen_commit(),
         "matcher_version": MATCHER_VERSION,
@@ -189,8 +220,12 @@ def main() -> int:
         "gradients": False,
         "note": "Exposure is a property of how the item was written. No model is "
                 "loaded and nothing is edited, so this is unaffected by the "
-                "[E-043]/[E-047] gradient failure. STRICT is a lower bound: the "
-                "true exposure is higher than reported, never lower.",
+                "[E-043]/[E-047] gradient failure. Quote exposure_rate_strict: "
+                "its rule has 100% precision and its value did not move when "
+                "the alias rule was corrected. Neither rate bounds "
+                "IDENTIFICATION, which hand-labelling put at essentially 100% "
+                "in both files, because MQuAKE renders every question from the "
+                "chain its edit sits on.",
         "files": [measure(f) for f in files],
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -199,7 +234,8 @@ def main() -> int:
     for f in payload["files"]:
         c = f["cross_tabulation"]
         print(f"{f['file']:18} n={f['n_questions']:6} "
-              f"exposed={f['exposure_rate_strict_or_above']:.3f}  "
+              f"strict={f['exposure_rate_strict']:.4f}  "
+              f"+alias={f['exposure_rate_strict_or_alias']:.4f}  "
               f"head-edited={c['head_edited']['rate']}  "
               f"later-hop={c['head_not_edited']['rate']}")
     print(f"\nwrote {args.out}")

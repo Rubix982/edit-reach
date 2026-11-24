@@ -1,16 +1,22 @@
 {
   "ticket": "E-048",
-  "date": "2026-11-23",
+  "date": "2026-11-24",
   "question": "does a MQuAKE question name a subject its case edited, and does that track whether the edit sits on the chain head?",
   "pre_registered": false,
-  "matchers_validated": false,
-  "editscreen_version": "0.2.0a1",
-  "editscreen_commit": "0893bfcc402f2708ddc9a1b2f5df25affee9258a",
-  "matcher_version": "0.1.0",
+  "matchers_validated": true,
+  "matcher_precision": {
+    "strict": "1.00, 261 hand-labelled MQuAKE items",
+    "alias": "0.90 [0.81, 0.98], 47 held-out items, after the 0.2.0 fix",
+    "where": "editscreen validation/, labels.claude.txt and labels.holdout.txt",
+    "caveat": "labelled by a model; a human subset is drawn in validation/labels.human.txt and not yet filled in, so these carry one unmeasured error rate of their own"
+  },
+  "editscreen_version": "0.2.0a2",
+  "editscreen_commit": "3bb1c9e6bbea8c88f8518587dca2f4a3119ebe07",
+  "matcher_version": "0.2.0",
   "python": "3.14.0+",
   "model": null,
   "gradients": false,
-  "note": "Exposure is a property of how the item was written. No model is loaded and nothing is edited, so this is unaffected by the [E-043]/[E-047] gradient failure. STRICT is a lower bound: the true exposure is higher than reported, never lower.",
+  "note": "Exposure is a property of how the item was written. No model is loaded and nothing is edited, so this is unaffected by the [E-043]/[E-047] gradient failure. Quote exposure_rate_strict: its rule has 100% precision and its value did not move when the alias rule was corrected. Neither rate bounds IDENTIFICATION, which hand-labelling put at essentially 100% in both files, because MQuAKE renders every question from the chain its edit sits on.",
   "files": [
     {
       "file": "MQuAKE-T.json",
@@ -18,21 +24,22 @@
       "n_cases": 1868,
       "n_questions": 5604,
       "levels": {
-        "CLEAN": 5516,
-        "ALIAS": 67,
+        "CLEAN": 5558,
+        "ALIAS": 25,
         "STRICT": 21
       },
-      "exposure_rate_strict_or_above": 0.0157,
+      "exposure_rate_strict": 0.0037,
+      "exposure_rate_strict_or_alias": 0.0082,
       "by_hops": {
         "2-hop": {
-          "exposed": 53,
+          "exposed": 43,
           "total": 4263,
-          "rate": 0.0124
+          "rate": 0.0101
         },
         "3-hop": {
-          "exposed": 35,
+          "exposed": 3,
           "total": 1335,
-          "rate": 0.0262
+          "rate": 0.0022
         },
         "4-hop": {
           "exposed": 0,
@@ -47,9 +54,9 @@
           "rate": 1.0
         },
         "head_not_edited": {
-          "exposed": 67,
+          "exposed": 25,
           "total": 5583,
-          "rate": 0.012
+          "rate": 0.0045
         }
       },
       "cases_with_unreadable_chain_head": 0
@@ -61,10 +68,11 @@
       "n_questions": 9000,
       "levels": {
         "STRICT": 5887,
-        "CLEAN": 2899,
-        "ALIAS": 214
+        "CLEAN": 2974,
+        "ALIAS": 139
       },
-      "exposure_rate_strict_or_above": 0.6779,
+      "exposure_rate_strict": 0.6541,
+      "exposure_rate_strict_or_alias": 0.6696,
       "by_hops": {
         "2-hop": {
           "exposed": 2109,
@@ -72,14 +80,14 @@
           "rate": 0.703
         },
         "3-hop": {
-          "exposed": 2098,
+          "exposed": 2058,
           "total": 3000,
-          "rate": 0.6993
+          "rate": 0.686
         },
         "4-hop": {
-          "exposed": 1894,
+          "exposed": 1859,
           "total": 3000,
-          "rate": 0.6313
+          "rate": 0.6197
         }
       },
       "cross_tabulation": {
@@ -89,9 +97,9 @@
           "rate": 0.9988
         },
         "head_not_edited": {
-          "exposed": 249,
+          "exposed": 174,
           "total": 3141,
-          "rate": 0.0793
+          "rate": 0.0554
         }
       },
       "cases_with_unreadable_chain_head": 0
@@ -102,26 +110,27 @@
       "n_cases": 9218,
       "n_questions": 27654,
       "levels": {
-        "CLEAN": 9059,
+        "CLEAN": 9289,
         "STRICT": 17986,
-        "ALIAS": 609
+        "ALIAS": 379
       },
-      "exposure_rate_strict_or_above": 0.6724,
+      "exposure_rate_strict": 0.6504,
+      "exposure_rate_strict_or_alias": 0.6641,
       "by_hops": {
         "2-hop": {
-          "exposed": 10456,
+          "exposed": 10360,
           "total": 14637,
-          "rate": 0.7144
+          "rate": 0.7078
         },
         "3-hop": {
-          "exposed": 5044,
+          "exposed": 4970,
           "total": 7605,
-          "rate": 0.6632
+          "rate": 0.6535
         },
         "4-hop": {
-          "exposed": 3095,
+          "exposed": 3035,
           "total": 5412,
-          "rate": 0.5719
+          "rate": 0.5608
         }
       },
       "cross_tabulation": {
@@ -131,9 +140,9 @@
           "rate": 0.9997
         },
         "head_not_edited": {
-          "exposed": 678,
+          "exposed": 448,
           "total": 9732,
-          "rate": 0.0697
+          "rate": 0.046
         }
       },
       "cases_with_unreadable_chain_head": 0
