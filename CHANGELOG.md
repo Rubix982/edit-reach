@@ -2,7 +2,7 @@
 
 ## 2026-11-24 · Session 10
 
-- [C-011] Closed — the six RippleEdits test types screen in the order their own definitions predict, so [T-016]'s two unexplained numbers are the benchmark working rather than the adapter failing. Predictions committed before any count was read (`results/C-011-predictions.md`, `8e7d69a`); result in `results/C-011-summary.md`, reproducible by `results/C-011-runner.py`.
+- [C-011] Closed — the six RippleEdits test types screen in the order their own definitions predict, so [T-016]'s two unexplained numbers are the benchmark working rather than the adapter failing. Predictions committed before any count was read (`results/C-011-predictions.md`, `8e7d69a`); result in `results/C-011-summary.md`, reproducible by `agents/engineer/workspace/run_c011_test_types.py`.
 - [T-016] Answered, and closed without the new draw it was expected to need.
 - [T-017] Opened — the adapter's longest-candidate rule can pick an alias over the canonical name, which makes 682 of 1,067 `Subject_Aliasing` strict hits circular.
 - The paper page gains the per-test-type table, finding F-19, limitation 14, and **a correction**: §5.8's RippleEdits rates are over test prompts (16,315 / 11,731 / 10,046), not entries. No rate moved.
