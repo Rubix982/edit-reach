@@ -8,6 +8,44 @@ Promotion to the ten-lens Design Protocol happens only when field 4 names a load
 
 ---
 
+## C-011 · Does a screen verdict mean the same thing on each of RippleEdits' six test types?
+
+**Status:** open
+**Opened:** 2026-11-24
+
+**1. WHERE WE ARE.**
+[C-010] measured the screen's precision on RippleEdits **stratified by subset** and found the strict rule right 100% on all three, so the subset rates are quotable. Stratified instead by RippleEdits' own six declared test types, the same run produces two numbers nobody has explained. `Compositionality_II` screens at **0.011 / 0.000 / 0.018** across `recent` / `random` / `popular` — essentially never naming the edited subject. `Subject_Aliasing` is **0.163 / 0.265 / 0.114** on the strict rule and rises sharply once name variants count. `editscreen` prints a `by declared test type` breakdown in its own CLI output, so the package is already shipping per-type numbers that no card has checked.
+
+**2. WHAT WE ARE DOING.**
+For each of the six test types RippleEdits declares, write down from the benchmark's own definition whether that type's queries should contain the edited subject's surface name — before looking at any count — then count what the screen actually finds, per type and per subset, and name every type where the count and the definition disagree.
+
+**3. WHY.**
+We do not know whether the two odd numbers are the benchmark working as designed or the adapter recovering the wrong string. The adapter takes the **longest candidate across all six types**, and two of those types name a different entity by design: `Compositionality_II` asks about an entity that has the edited subject as its object, and `Subject_Aliasing` deliberately uses an alias. So a label that is correct for the entry can still be the wrong string to look for in one type's prompts. After this card, each per-type rate is either a property of the corpus or a property of the adapter, and we can say which.
+
+**4. WHAT IS AFFECTED.** *(written before the work)*
+- [T-016], which closes or stays open and says what would close it.
+- `editscreen`'s `by_test_type()` output, which is printed today and justified by nothing.
+- The paper's §5.8, which reports per-subset rates only, and §5.5 / F-03, which claims `Compositionality_I` items name the edited subject — measured there with the coefficient on one subset, and measurable here by string over all three.
+- **[C-010]'s `w` result is narrowed either way.** `w` was adjudicated per entry, against the entry's Wikidata label. A label correct for the entry can still be the wrong string for a particular type's prompts, and this card is where that distinction either bites or does not.
+- **Nothing in [E-048] changes.** MQuAKE declares no such types.
+
+**5. CONCLUSION IF WE DO IT.** *(written before the counts are read)*
+- **If every type's count matches what its definition predicts:** the two odd numbers are the benchmark working exactly as written, [T-016] closes with no new draw and no new labelling, and the paper gains a per-type table whose explanation is the benchmark's own definitions rather than ours.
+- **If a type whose definition predicts the subject IS named comes out low** — `Compositionality_I`, `Relation_Specificity` or `Forgetfulness` — the adapter is recovering a string that is wrong for that type's prompts, the per-type numbers are not quotable, and the per-subset rates in §5.8 need re-reading, because they are the same items pooled.
+- **If a type whose definition predicts the subject is NOT named comes out high**, the screen is firing on something other than the edited subject, which is a false-positive mode [C-010]'s per-entry adjudication could not have seen.
+
+**6. CONSEQUENCE OF NOT DOING IT.**
+`editscreen` goes on printing a per-test-type breakdown that nobody has checked, next to per-subset rates that have been. A user splitting their evaluation by that breakdown would be acting on the unchecked half of the output, and the package gives them no way to tell which half is which.
+
+**Controls, and what could make this wrong.**
+- **The definitions are written down before the counts are read**, and they are taken from the paper rather than from memory. Reading the counts first would turn every number into a prediction that came true.
+- **Per type AND per subset, never pooled.** Recovery already differs by ten points across the subsets, so a pooled per-type rate confounds the two.
+- **This card adds no labels.** It compares a stated prediction to a count. The 441 items already labelled stay as they are, and no fourth model-labelled draw is made while two blind human subsets sit unfilled.
+- **A count is not a precision.** This card cannot say how often the screen is right on a given type; it can only say whether the per-type pattern needs the adapter to explain it. If it does, that is when a draw stratified by type is worth its labelling.
+- **Cost.** No model, no gradients, no network beyond fetching the paper's definitions. Minutes.
+
+---
+
 ## C-010 · Does the screen hold up on a benchmark that does not hand it the subject?
 
 **Status:** closed
