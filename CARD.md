@@ -95,7 +95,7 @@ The adapter ships and produces three numbers nobody may quote, which makes it de
 
 ## C-009 · Is the site where these edits go in a site where the attribute actually lives?
 
-**Status:** blocked
+**Status:** open
 **Opened:** 2026-11-15
 **Parked:** 2026-11-22 — written in full, never run. The effort was wound up while the card was still open, so it is parked rather than closed: nothing about it has been decided and nothing needs re-deciding to resume. The three branches and the 5-point threshold below were fixed before any RAVEL number on this setup was looked at, and they still are.
 
@@ -108,14 +108,22 @@ The adapter ships and produces three numbers nobody may quote, which makes it de
 
 **Three ways out, and the choice is not a detail.** Run the 8B locally, which this project has never done and which the machine may not hold. Reimplement the Full Vector interchange intervention with nnsight on NDIF, which is how every reading in this paper was taken and needs no gradients — but which turns field 3's *"externally scored ... from a benchmark nobody here built"* into our own implementation over their data and splits, and that is a real cost to the claim. Or drop to a smaller MIB model, which loses comparability with the layer-5 Llama-3.1-8B edit site that is the whole point of the card. **Until one is chosen, field 2 cannot be executed as written.**
 
+**Unblocked: 2026-11-24 — the second way out was chosen: reimplement the Full Vector interchange intervention with nnsight on NDIF.** Chosen over running the 8B locally and over dropping to a smaller model. The reason given was that it is a thing worth learning how to do, and that is a legitimate reason to pick between three options that all answer the same question; it is recorded here so nobody later reads the choice as having been forced by the evidence.
+
+**What it costs, stated here rather than discovered in review.** Field 3 said the card would end with *"an externally scored number ... from a benchmark nobody here built"*. After this choice the **data, the splits and the task definition** are still theirs and the **implementation is ours**, so the number is no longer externally scored. Fields 2 and 3 are amended below to say that, and a new control is added to buy back what can be bought back: before any layer-5 reading is taken, the same implementation is run on whatever MIB's paper reports for Full Vector on this model, and the two are compared. If our implementation reproduces their published Full Vector number, the layer-5 reading inherits that credibility; if it does not, the card closes on that discrepancy and reports it, because an implementation that cannot reproduce a published baseline cannot be trusted to rank layers. **That reproduction check is a stopping condition, not a sanity check.** See [T-018].
+
+**Two things to establish before writing any code, and both are reading, not running.** What exactly MIB's Full Vector swaps and at which index — field 2's first control already says this and it now has to be answered out of `atticusg/CausalAbstraction`'s source rather than its README, since the README does not document the baseline. And what number MIB's paper actually reports for Full Vector on Llama-3.1-8B RAVEL, which the reproduction control above needs and which this card has not yet read off Table 3g.
+
 **1. WHERE WE ARE.**
 This project closed negative: the coefficient detects contamination, not propagation (C-001, C-002). Every edit here and in edit-slice is delivered at Llama-3.1-8B **layer 5**, on the subject's **last token** — a choice inherited from ROME and never tested in either project. MIB's RAVEL task (Mueller et al., ICML 2025, arXiv 2504.13151, Table 3g) measures where that same model holds a city's **country, continent and language**, at the last token of the city, at every layer. Its best method, DAS, scores **75 / 58 / 63** IIA averaged over layers and **83 / 64 / 70** at its best layer.
 
 **2. WHAT WE ARE DOING.**
 Run MIB's RAVEL causal-variable evaluation on Llama-3.1-8B with its no-featurizer baseline ("Full Vector": swap the whole hidden vector) at the city's last token, at every layer, and report interchange intervention accuracy for each of the three attributes at layer 5 against that attribute's best layer.
 
+*Amended 2026-11-24:* **the evaluation is our own implementation of their baseline, not their runner.** Their released RAVEL data and splits, their task definition and their metric; the interchange intervention written with nnsight against the NDIF-served model, because their code has moved to `atticusg/CausalAbstraction` and that repository documents no supported remote path. The amendment changes who wrote the code, not what is measured — and it adds the reproduction control above, which is what keeps that distinction checkable.
+
 **3. WHY.**
-We do not know whether the place edits are delivered is a place where the fact is causally carried. ROME's default is not evidence for it: Hase, Bansal, Kim & Ghandeharioun (NeurIPS 2023, arXiv 2301.04213) found that causal-tracing localization *"do[es] not provide any insight into which model MLP layer would be best to edit."* After this card there is an externally scored number for the edit site, on the same model, from a benchmark nobody here built.
+We do not know whether the place edits are delivered is a place where the fact is causally carried. ROME's default is not evidence for it: Hase, Bansal, Kim & Ghandeharioun (NeurIPS 2023, arXiv 2301.04213) found that causal-tracing localization *"do[es] not provide any insight into which model MLP layer would be best to edit."* After this card there is a number for the edit site, on the same model, on a benchmark's own data, splits and metric. *Amended 2026-11-24:* this sentence previously said **externally scored**, and after the implementation choice above that word is no longer true — the task and the data are theirs, the code is ours. What replaces it is the reproduction check: a number that matches their published Full Vector baseline is worth nearly as much and is worth it for a stated reason, where an unchecked reimplementation is worth little.
 
 **4. WHAT IS AFFECTED.** *(written before the work)*
 - The paper's explanation of its own negative result — *contamination, not propagation* — which today never asks whether the edit went in at the right place.
@@ -138,7 +146,8 @@ The paper explains a negative result without once checking its edit site against
 - **MIB's own data and splits,** not a regenerated set, so the numbers are comparable to Table 3g.
 - **The serving device is recorded** with each run (C-006). IIA is an argmax over tokens, so the 2.2e-04 cross-device tolerance should not move it, and recording the device is how that is checked rather than assumed.
 - **The 5-point threshold was set here, before running,** and before any RAVEL number on this setup was looked at.
-- **Cost.** Forward passes with interchange interventions on Llama-3.1-8B through NDIF, using MIB's released code and data. No edits, no gradients.
+- **Reproduction before reading.** Our implementation must first reproduce MIB's published Full Vector number on this model before any layer-5 comparison is read. A discrepancy closes the card on the discrepancy. [T-018].
+- **Cost.** *Amended 2026-11-24:* previously *"using MIB's released code and data"*. Forward passes with interchange interventions on Llama-3.1-8B through NDIF, using MIB's released **data** and our own nnsight implementation of their Full Vector baseline. No edits, no gradients — the interchange intervention is forward-only, which is why the `out.grad is None` failure that stopped [E-043] and [E-047] does not reach this card.
 
 ---
 

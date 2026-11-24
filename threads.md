@@ -316,3 +316,11 @@ This repository has two checkouts on this machine, exactly the hazard `ai/CLAUDE
 **Opened:** 2026-11-24
 **Question:** [C-011] found that 682 of 1,067 `Subject_Aliasing` strict hits are circular — the adapter recovered the subject label out of an aliasing prompt and then reported that same prompt as naming the subject. 78% on `random`, 34% on `recent`. The recovery takes the longest candidate across all six test types, and an alias is often the longest string an entry offers, so the canonical name can lose to it. [C-010] could not see this: `w` was adjudicated per entry against the Wikidata label, and an alias **is** a name of the same entity, so the adjudication passes while the verdict on that one prompt is manufactured. Two things to settle, and the second is the one with teeth. How often does the recovered label differ from the entry's Wikidata label? And does restricting the candidate pool to the four non-aliasing types change any published rate — it would remove 682 strict hits out of 38,092 prompts, 1.8%, so the answer is probably no and that needs showing rather than assuming.
 **Answer:** —
+
+### T-018 · Does our own Full Vector implementation reproduce MIB's published number for it?
+
+**Status:** open
+**Parent:** [C-009]
+**Opened:** 2026-11-24
+**Question:** C-009's model path was decided on 2026-11-24: the Full Vector interchange intervention is reimplemented with nnsight against the NDIF-served Llama-3.1-8B, because MIB's code has moved to `atticusg/CausalAbstraction` and that repository documents no supported remote path. The cost is that the number stops being externally scored — their data, their splits, their metric, our code. This thread holds the one check that buys most of it back. Run the implementation against whatever MIB's paper reports for Full Vector on this model **before** any layer-5 reading is taken, and compare. Two things have to be read first, both out of the source rather than the README: which hidden vector their Full Vector swaps and at which layer index, and what Table 3g actually reports for that baseline. A match means the layer-5 comparison inherits the benchmark's credibility; a mismatch closes C-009 on the mismatch, because an implementation that cannot reproduce a published baseline cannot be trusted to rank layers against each other.
+**Answer:** —
