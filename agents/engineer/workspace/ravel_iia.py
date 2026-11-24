@@ -211,6 +211,92 @@ def _blocks(model):
     return model.transformer.h
 
 
+def batch_positions(tokenizer, prompts: list[str], indices: list[int]):
+    """Where each prompt's entity token sits once the batch is padded.
+
+    **nnsight left-pads**, measured rather than assumed: two prompts of 12 and 4
+    tokens come back as a [2, 12, 4096] residual with the short one's real
+    tokens at the END. So an entity at index `i` of an unpadded prompt of length
+    `L`, in a batch whose longest member is `T`, sits at `T - L + i`.
+
+    Getting this wrong does not raise. It patches a padding token, or a token of
+    the wrong example, and the run produces a plausible wrong number - which is
+    why `check_positions` exists and is called on the first batch.
+    """
+    lens = [len(tokenizer(p)["input_ids"]) for p in prompts]
+    T = max(lens)
+    return [T - L + i for L, i in zip(lens, indices)], lens, T
+
+
+def check_positions(tokenizer, prompts, indices, entities) -> list[str]:
+    """Does each computed batch position decode to the end of its entity?"""
+    pos, lens, T = batch_positions(tokenizer, prompts, indices)
+    bad = []
+    for n, (prompt, ent) in enumerate(zip(prompts, entities)):
+        ids = tokenizer(prompt)["input_ids"]
+        j = pos[n] - (T - lens[n])
+        if not 0 <= j < len(ids):
+            bad.append(f"{ent!r}: position {pos[n]} outside the prompt")
+            continue
+        piece = tokenizer.decode([ids[j]]).strip().lower()
+        if not piece or not ent.lower().endswith(piece):
+            bad.append(f"{ent!r}: position {pos[n]} decodes to {piece!r}")
+    return bad
+
+
+def read_vectors(model, prompts: list[str], positions: list[int], layer: int,
+                 *, remote: bool):
+    """The residual stream after block `layer`, one vector per prompt, one trace.
+
+    This is the whole point of batching: a trace costs 2.39s median against
+    ~0.4s of server-side execution, so the round trip dominates and the only
+    lever is how many examples ride in one.
+    """
+    import torch
+    blocks = _blocks(model)
+    with torch.no_grad(), model.trace(prompts, remote=remote):
+        out = blocks[layer].output
+        resid = (out[0] if isinstance(out, tuple) else out)
+        idx = torch.tensor(positions, device=resid.device)
+        rows = torch.arange(len(positions), device=resid.device)
+        vecs = resid[rows, idx, :].save()
+    return vecs
+
+
+def generate_batched(model, tokenizer, prompts: list[str], indices: list[int],
+                     layer: int, vectors, *, remote: bool,
+                     max_new_tokens: int = 6) -> list[str]:
+    """Greedy continuations for a whole batch, patched at each step.
+
+    `max_new_tokens` traces for the batch rather than for each example. The
+    patch is reapplied every step because the entity stays in context and an
+    unpatched re-read would undo the intervention.
+    """
+    import torch
+    blocks = _blocks(model)
+    texts = list(prompts)
+    done = [False] * len(prompts)
+    for _ in range(max_new_tokens):
+        pos, _, _ = batch_positions(tokenizer, texts, indices)
+        with torch.no_grad(), model.trace(texts, remote=remote):
+            out = blocks[layer].output
+            resid = (out[0] if isinstance(out, tuple) else out)
+            idx = torch.tensor(pos, device=resid.device)
+            rows = torch.arange(len(pos), device=resid.device)
+            resid[rows, idx, :] = vectors.to(resid.device).to(resid.dtype)
+            logits = model.lm_head.output[:, -1, :].save()
+        nxt = logits.argmax(dim=-1).tolist()
+        for n, t in enumerate(nxt):
+            if done[n]:
+                continue
+            piece = tokenizer.decode(t)
+            if not piece:
+                done[n] = True
+                continue
+            texts[n] += piece
+    return [t[len(p):] for t, p in zip(texts, prompts)]
+
+
 def read_vector(model, prompt: str, index: int, layer: int, *, remote: bool):
     """The residual stream after block `layer`, at one token of one prompt.
 
@@ -302,6 +388,80 @@ def probe_one(model, tokenizer, pair: dict, layer: int, *, remote: bool,
             "correct": check(after, pair["expected"])}
 
 
+def score_batch(model, tokenizer, ps: list[dict], layer: int, *, remote: bool,
+                tokens: int = 6, batch: int = 32, verbose: bool = False) -> dict:
+    """Interchange intervention accuracy over `ps`, batched.
+
+    Four traces' worth of work per batch: read the base vectors, read the source
+    vectors, generate the unintervened continuations, generate the intervened
+    ones - the last two being `tokens` traces each. So a batch of B costs
+    `2 + 2 * tokens` traces however large B is, which is the only reason a run
+    of any size is affordable.
+
+    **BATCH SIZE CHANGES INDIVIDUAL VERDICTS, AND THAT IS NOT A BUG HERE.**
+    Measured 2026-11-24: the same source vector read alone and read inside a
+    batch of six differs by up to 0.0078, which is bfloat16 granularity and not
+    a position error - the clean next-token prediction is identical batched or
+    alone, and `check_positions` passes. Batching changes reduction order and
+    kernel choice, nothing more.
+
+    It is still enough to flip an example that sits near a decision boundary.
+    `Portsmouth <- Abau` asked for a language answers `English` at batch 1 and
+    `Tok Pisin` at batch 6 - the base city's answer against the patched city's,
+    contested, and decided by noise. That is the same class as this project's
+    [C-006] and [T-008]: readings that move with the hardware and the session.
+
+    So **batch size is part of a run's configuration and is recorded with every
+    result**, exactly as the serving device is. Per-example verdicts are not
+    reproducible across batch sizes; the aggregate is the quantity, and whether
+    the aggregate is stable across batch sizes is a control that has to be run
+    rather than assumed.
+    """
+    hits = hits_before = n = 0
+    checked_positions = False
+    for start in range(0, len(ps), batch):
+        chunk = ps[start:start + batch]
+        bp = [c["base_prompt"] for c in chunk]
+        sp = [c["source_prompt"] for c in chunk]
+        bi = [entity_last_token(tokenizer, c["base_prompt"], c["base_entity"])
+              for c in chunk]
+        si = [entity_last_token(tokenizer, c["source_prompt"], c["source_entity"])
+              for c in chunk]
+        if min(bi + si) < 0:
+            raise ValueError("an entity was not found in its prompt")
+
+        if not checked_positions:
+            bad = (check_positions(tokenizer, bp, bi, [c["base_entity"] for c in chunk])
+                   + check_positions(tokenizer, sp, si,
+                                     [c["source_entity"] for c in chunk]))
+            if bad:
+                raise ValueError("batch positions are wrong:\n  "
+                                 + "\n  ".join(bad[:5]))
+            checked_positions = True
+
+        bpos, _, _ = batch_positions(tokenizer, bp, bi)
+        spos, _, _ = batch_positions(tokenizer, sp, si)
+        own = read_vectors(model, bp, bpos, layer, remote=remote)
+        src = read_vectors(model, sp, spos, layer, remote=remote)
+        before = generate_batched(model, tokenizer, bp, bi, layer, own,
+                                  remote=remote, max_new_tokens=tokens)
+        after = generate_batched(model, tokenizer, bp, bi, layer, src,
+                                 remote=remote, max_new_tokens=tokens)
+
+        for c, b4, af in zip(chunk, before, after):
+            n += 1
+            hits_before += check(b4, c["expected"])
+            hits += check(af, c["expected"])
+            if verbose:
+                print(f"  {'ok ' if check(af, c['expected']) else 'NO '}"
+                      f"{c['base_entity']!r} <- {c['source_entity']!r} "
+                      f"asks {c['asked']:<9} before {b4.strip()[:28]!r} "
+                      f"after {af.strip()[:28]!r} want {c['expected']!r}")
+    return {"n": n, "iia": hits / n if n else None,
+            "unintervened": hits_before / n if n else None,
+            "batch": batch, "tokens": tokens, "layer": layer}
+
+
 def selftest() -> int:
     """Everything above runs offline, so it is checked offline."""
     fails = []
@@ -338,6 +498,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--split", default="val")
+    ap.add_argument("--run", type=int, default=0,
+                    help="score N pairs, batched")
+    ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--probe", type=int, default=0,
                     help="run N pairs end to end through the model")
     ap.add_argument("--layer", type=int, default=5)
@@ -360,6 +524,30 @@ def main() -> int:
 
     rows = load(args.split)
     print(f"{len(rows):,} rows in {args.split}\n")
+
+    if args.run:
+        import time
+        from transformers import AutoTokenizer
+        sys.path.insert(0, "src")
+        from editreach.remote import connect
+        tok = AutoTokenizer.from_pretrained(args.model)
+        model = connect(args.model)
+        ps, _ = pairs(rows, args.target, args.kind)
+        ps = ps[:args.run]
+        t0 = time.time()
+        r = score_batch(model, tok, ps, args.layer, remote=not args.local,
+                        tokens=args.tokens, batch=args.batch,
+                        verbose=args.verbose)
+        dt = time.time() - t0
+        print(f"layer {args.layer}  target {args.target}  {args.kind}")
+        print(f"  n            {r['n']:,}")
+        print(f"  IIA          {r['iia']:.3f}")
+        print(f"  unintervened {r['unintervened']:.3f}   "
+              f"(the model's own accuracy on these, same decoding)")
+        print(f"  batch        {r['batch']}   tokens {r['tokens']}   "
+              f"(both change individual verdicts; see score_batch)")
+        print(f"  wall         {dt:.1f}s   {dt / max(r['n'], 1):.2f}s per example")
+        return 0
 
     if args.probe:
         from transformers import AutoTokenizer
