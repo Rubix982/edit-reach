@@ -22,6 +22,8 @@ Two rates per file. The first counts only questions containing the edited subjec
 
 Two files published under one benchmark's name, differing by a factor of **177** on whether the question hands the model the entity whose fact was changed.
 
+*Added 2026-11-24, from C-010:* all three RippleEdits subsets screen at 51.9–79.6% on the same rule, which is MQuAKE-CF's range. **The gap is a property of these two MQuAKE files, not a spread across propagation benchmarks.** No rate on this page changes.
+
 ## What explains it, and why it is not a discovery
 
 The chain head — `triples_labeled[0][0]` — is the entity a multi-hop question starts from. Split the questions by whether the case edits that entity:

@@ -10,8 +10,11 @@ Promotion to the ten-lens Design Protocol happens only when field 4 names a load
 
 ## C-010 · Does the screen hold up on a benchmark that does not hand it the subject?
 
-**Status:** open
+**Status:** closed
 **Opened:** 2026-11-24
+**Closed:** 2026-11-24 — yes, on the branch the threshold named. Strict precision is **100% on all three subsets**, against a threshold of 95% written down before any of the 180 items was labelled, so the floor claim survives a corpus that recovers its subject rather than being handed it. The fifth label, `w`, was never used: across 166 distinct entries the recovery named the right entity every time, adjudicated against the Wikidata QID the benchmark itself cites. Full result in `results/C-010-summary.md`; the three subset rates it licenses are in [T-016].
+
+**What it did not settle.** The labeller was a model, and the blind 25-item subset for a second labeller is drawn and unfilled — so the agreement rate that belongs beside every figure above is still unmeasured. Two matcher failure modes were found on this draw, a title surviving as a derived variant and a surname suppressed after a middle initial, and both are recorded unfixed because a fix read off a sample cannot be scored on that sample.
 
 **1. WHERE WE ARE.**
 The matchers now have precision, measured on 261 hand-labelled MQuAKE items: the strict rule right **100%** of the time, the derived-alias rule **57.1% [45.1, 69.0]** before it was fixed and **90.2% [80.5, 97.6]** on a held-out draw after. **Every one of those items came from MQuAKE, and MQuAKE hands the screen its subject as a string.** RippleEdits does not — it names the subject by Wikidata QID, so `editscreen`'s adapter recovers the label from the entry's own test prompts, succeeding on 75.0% / 85.0% / 81.8% of `recent` / `random` / `popular`. The screen then reports strict rates of **79.6% / 51.9% / 56.4%** over those entries, and nothing licenses quoting them.
