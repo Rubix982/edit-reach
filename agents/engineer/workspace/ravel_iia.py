@@ -131,7 +131,7 @@ def pairs(rows: list[dict], target: str, kind: str) -> tuple[list[dict], dict]:
     the denominator.
     """
     out, dropped = [], {"not_an_attribute": 0, "no_counterfactual": 0, "no_gold": 0}
-    for r in rows:
+    for i, r in enumerate(rows):
         if r["attribute"] not in ATTRS:
             dropped["not_an_attribute"] += 1
             continue
@@ -143,7 +143,14 @@ def pairs(rows: list[dict], target: str, kind: str) -> tuple[list[dict], dict]:
         if not isinstance(want, str) or not want.strip():
             dropped["no_gold"] += 1
             continue
-        out.append({"base_prompt": r["prompt"], "base_entity": r["entity"],
+        # `row` is the index back into `rows`. A caller that needs anything else
+        # off the source row MUST come back through this index and never look the
+        # row up by its prompt text: base prompts are not unique (10,276 distinct
+        # prompts over 15,950 val rows, so two rows in three share one), and a
+        # prompt-keyed lookup silently returns a different row's counterfactual.
+        # That bug scored the source arm of the filter at 0.31 instead of 0.79.
+        out.append({"row": i,
+                    "base_prompt": r["prompt"], "base_entity": r["entity"],
                     "asked": r["attribute"], "source_prompt": s["prompt"],
                     "source_entity": s["entity"], "target": target,
                     "expected": want, "degenerate": degenerate(want),

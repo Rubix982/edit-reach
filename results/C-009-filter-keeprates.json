@@ -1,0 +1,133 @@
+{
+  "batch": 48,
+  "tokens": 6,
+  "seed": 0,
+  "cells": [
+    {
+      "kind": "prompt_template_counterfactual",
+      "target": "Continent",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 245,
+      "after_correctness": 189,
+      "after_balance": 96,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 7
+      }
+    },
+    {
+      "kind": "prompt_template_counterfactual",
+      "target": "Country",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 245,
+      "after_correctness": 189,
+      "after_balance": 145,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 0
+      }
+    },
+    {
+      "kind": "prompt_template_counterfactual",
+      "target": "Language",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 245,
+      "after_correctness": 189,
+      "after_balance": 133,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 0
+      }
+    },
+    {
+      "kind": "attribute_counterfactual",
+      "target": "Continent",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 252,
+      "after_correctness": 202,
+      "after_balance": 85,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 3
+      }
+    },
+    {
+      "kind": "attribute_counterfactual",
+      "target": "Country",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 252,
+      "after_correctness": 202,
+      "after_balance": 169,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 0
+      }
+    },
+    {
+      "kind": "attribute_counterfactual",
+      "target": "Language",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 252,
+      "after_correctness": 202,
+      "after_balance": 148,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 0
+      }
+    },
+    {
+      "kind": "wikipedia_counterfactual",
+      "target": "Continent",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 300,
+      "after_correctness": 238,
+      "after_balance": 104,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 2
+      }
+    },
+    {
+      "kind": "wikipedia_counterfactual",
+      "target": "Country",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 300,
+      "after_correctness": 238,
+      "after_balance": 188,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 0
+      }
+    },
+    {
+      "kind": "wikipedia_counterfactual",
+      "target": "Language",
+      "built": 300,
+      "base_ok": 238,
+      "source_ok": 300,
+      "after_correctness": 238,
+      "after_balance": 184,
+      "dropped": {
+        "not_an_attribute": 0,
+        "no_counterfactual": 0,
+        "no_gold": 0
+      }
+    }
+  ]
+}
