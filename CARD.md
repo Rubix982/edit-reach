@@ -14,6 +14,8 @@ Promotion to the ten-lens Design Protocol happens only when field 4 names a load
 **Opened:** 2026-11-24
 **Closed:** 2026-11-24 — **branch 2.** It decides a large one. Restricting the canonical pick to the five non-aliasing test types moves the strict rate **up** by 2.4, 18.8 and 9.8 points on `recent` / `random` / `popular`, where the paper had asserted the rule inflates rather than suppresses. The combined "names it or a variant" rate moves by 0.0, +0.3 and −0.2, so every prompt that changed verdict moved between STRICT and ALIAS inside the same flagged set. **The split is rule-dependent and the union is not.** `results/C-012-summary.md`; predictions committed at `6786538` before the runner was written.
 
+**Corroborated 2026-11-28, from a direction this card did not use.** C-012 reached *the split is rule-dependent and the union is not* by scoring the corpus under three recovery rules. `editscreen`'s second alias draw reached the same shape by scoring twelve items against a human instead: **"flag is right" 100%, "level is right" 20.3% [6.2, 36.2]** — the union right every time, the STRICT/ALIAS split wrong four times in five. Two independent methods, the same boundary. The closing finding stands and is now harder to attribute to how the rules were compared. See `editscreen/validation/README.md`, "the LEVEL is what fails", and [T-019] for the two recovery defects it names.
+
 **C-009 was parked for this one sitting and is open again.** Recorded because the one-card rule is the rule most easily broken by a card that looked like cleanup.
 
 **1. WHERE WE ARE.**
