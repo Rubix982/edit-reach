@@ -181,7 +181,8 @@ def quiet_stdout():
         yield
 
 
-#: nnsight 0.8.1 deprecates `LanguageModel` in favour of `TransformersModel`.
+#: nnsight deprecates `LanguageModel` in favour of `TransformersModel` from
+#: 0.8.1 onward; still deprecated, still working, on 0.8.4.
 #: The default stays `LanguageModel` **on purpose**: every number in this repo
 #: and in edit-slice, and every cached tensor on disk, was read through it, and
 #: switching loaders is only housekeeping if the two produce identical
