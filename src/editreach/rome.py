@@ -248,8 +248,16 @@ def compute_v(model, prompt: str, subject: str, target: str, *,
             kl = torch.sum(torch.exp(ref) * (ref - post))
 
             loss = nll + kl_factor * kl + weight_decay * (d * d).sum()
-            loss.backward()
-            g = out.grad[0, idx].float().save()
+            # `with loss.backward():`, not a bare call. Since nnsight 0.8
+            # `backward()` is a context manager that interleaves the real
+            # backward with this block, and `.grad` is served ONLY inside it --
+            # "Only ``.grad`` is served inside the block", per
+            # nnsight/intervention/backward.py. A bare call with `.grad` read
+            # outside is the 0.7 API; it still works in process, because plain
+            # autograd fills `.grad` and `retain_grad()` keeps it, which is why
+            # this survived unnoticed. Remotely there is nothing to serve.
+            with loss.backward():
+                g = out.grad[0, idx].float().save()
             lv = loss.float().save()
             nv = nll.float().save()
 
@@ -424,7 +432,9 @@ def _grad_step(model, batch, meta, D, layer, ref_logp, kl_factor, weight_decay):
                 # fire, which is why it survived every run until [E-033] tried 70B.
                 decay = weight_decay * (Dd[i] * Dd[i]).sum()
                 total = total + nll + kl_factor * kl + decay.to(nll.device)
-            total.backward()
-            g_all = out.grad.float().save()
+            # Same migration as `compute_v`: `.grad` is only served inside
+            # the backward block from nnsight 0.8 onward.
+            with total.backward():
+                g_all = out.grad.float().save()
             lv = total.float().save()
     return g_all, lv
