@@ -6,13 +6,34 @@ code. If these break, numbers stop being comparable across the two projects.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 import pytest
 
-EDIT_SLICE_SRC = Path(__file__).resolve().parents[2] / "edit-slice" / "src"
-pytestmark = pytest.mark.skipif(not EDIT_SLICE_SRC.is_dir(), reason="edit-slice not present")
+#: edit-slice has lived at two paths. This checked only the first, so once the
+#: project moved under open-concept-lab these three tests SKIPPED on every run
+#: and the suite still reported green -- a guard that stops guarding without
+#: ever failing. Candidates are tried in order; EDITSLICE_SRC overrides.
+_CANDIDATES = (
+    Path(__file__).resolve().parents[2] / "edit-slice" / "src",
+    Path(__file__).resolve().parents[2] / "open-concept-lab" / "ai" / "edit-slice" / "src",
+)
+
+
+def _find_edit_slice_src() -> Path | None:
+    override = os.environ.get("EDITSLICE_SRC")
+    if override:
+        return Path(override) if Path(override).is_dir() else None
+    return next((c for c in _CANDIDATES if c.is_dir()), None)
+
+
+EDIT_SLICE_SRC = _find_edit_slice_src()
+pytestmark = pytest.mark.skipif(
+    EDIT_SLICE_SRC is None,
+    reason=f"edit-slice not found at any of {[str(c) for c in _CANDIDATES]}; "
+           "set EDITSLICE_SRC to point at its src/")
 
 
 @pytest.fixture(autouse=True)
