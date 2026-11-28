@@ -332,6 +332,13 @@ def compute_v_batch(model, specs: list[EditSpec], *, layer: int = LAYER,
         return out
 
     ref_all = retrying(_ref_once, what=f"pre-edit essence pass, layer {layer}")
+    # `.detach()` for the same reason as in `compute_v`: these are KL ANCHORS,
+    # the pre-edit distribution is a constant, and differentiating through it
+    # would be wrong wherever it is possible. Remotely it never could be --
+    # NDIF returns saved values as plain data -- so this only bites in process,
+    # where the first `.backward()` frees the graph these rows are holding and
+    # step two dies with "backward through the graph a second time".
+    ref_all = ref_all.detach()
     ref_logp = {m["case_id"]: torch.log_softmax(ref_all[2 * i + 1, m["last_e"]].cpu(), -1)
                 for i, m in enumerate(meta)}
 
