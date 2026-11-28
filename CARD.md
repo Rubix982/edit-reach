@@ -199,6 +199,37 @@ The adapter ships and produces three numbers nobody may quote, which makes it de
 
 **What is left to build, in the order it has to be built.** Batched traces, without which nothing else matters; **MIB's filtering**, which keeps every example of the target attribute and half of each other and so sets the denominator; and the bootstrap over the three counterfactual types for the interval control.
 
+**MIB's filtering is built, 2026-11-26, and that was the item the write-up called the blocker.** `results/T-020-summary.md` said of it *"That is the next thing to build and the reproduction cannot be attempted before it exists"*. It exists: `agents/engineer/workspace/ravel_filter.py`, selftested, with `ravel_iia.py` amended to carry a row index.
+
+**Both of MIB's filters are ported with their oddities intact, because fixing them here would make our number incomparable with theirs.** In order: **correctness**, `FilterExperiment.filter` at MIB's pinned commit `f9ed6777`, and **attribute balance**, `get_filtered_indices` in `ravel_baselines.py`. Three things a reimplementation would quietly improve, and all three are kept:
+
+- **Correctness is a conjunction over BOTH arms, not a threshold on one.** The model must answer the base prompt and the counterfactual prompt correctly, unintervened. Two of this project's own notes — `CARD.md:200` as it then stood, and `T-020-summary.md:47` — described it as one condition on one prompt. Both were wrong, and were caught only by re-fetching MIB's source rather than porting from the note.
+- **`half` is misnamed in MIB's own code.** `half = len(attr_to_indices[target_variable])` is the FULL count of the target attribute; it is the *other* attributes that get cut to `half // 2`. Ported under MIB's name so the two can be diffed.
+- **The wikipedia counterfactual's source arm passes unconditionally.** Its causal-model answer is `""`, `check` splits the expected value on commas and tests substring membership, and `"" in anything` is True. Not a bug we introduced and not one we may fix.
+
+**Keep rates, 300 pairs per cell, 6 generated tokens, batch 48, seed 0.**
+
+| counterfactual | base | source | joint | rate | balanced (Cont / Ctry / Lang) |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `prompt_template` | 238 | 245 | 189 | 0.630 | 96 / 145 / 133 |
+| `attribute` | 238 | 252 | 202 | 0.673 | 85 / 169 / 148 |
+| `wikipedia` | 238 | 300 | 238 | 0.793 | 104 / 188 / 184 |
+
+**The four predictions were committed at `804c30b` before any count was read, and one of them failed.** `results/C-009-filter-predictions.md`.
+
+1. **Held.** Clean base accuracy came out **0.793**, above [T-020]'s 0.69. That 0.69 was never the model's own accuracy — `score_batch`'s "unintervened" arm goes through the patched path, where both arms carry an identical write by design. `generate_clean` writes nothing.
+2. **Held exactly, to the pair.** `source_ok` = 300 = `built` for the wikipedia family, as the empty-option hole requires. This was the one that would have condemned the port.
+3. **FAILED, and the reasoning failed with it.** Predicted 0.50–0.60, on the argument that the two arms are correlated and so the conjunction beats the independent product. Actual **0.630** and **0.673**, against independent products of 0.648 and 0.666 — within 1.8 points either side. **The arms are essentially independent, and the correlation argument was wrong**, not merely mis-sized.
+4. **Held, strongly.** The three attributes do not survive at the same rate, so the balanced sets differ: 96 / 145 / 133 on one family, 85 / 169 / 148 on another. **MIB's three published numbers are not over equally sized sets**, and [T-018] has to say so rather than let a reader assume one denominator.
+
+**The source arm first scored 0.31, and the cause was ours.** `build()` keyed rows by prompt text. Base prompts are **not unique** — 10,276 distinct prompts over 15,950 val rows, so two rows in three share one — and the lookup silently returned a different row's counterfactual. A probe asking the continent of Pinsk scored the model's correct `Europe` against gold `'Arabic,Hebrew,Russian'`. Fixed by carrying `"row": i` through `pairs()`. A regression guard with two synthetic rows sharing a prompt was added **and verified to fail against the old lookup**, which is the only way to know a guard guards anything.
+
+**One claim made here was wrong and is withdrawn.** I recorded an apparent off-by-one — *"the final sizes imply 48/73/67 = 188, one short of the 189 reported"* — and called it a silent-drop path needing a guard. It is a reading error. The three targets do not share a survivor pool: `pairs()` drops rows whose gold for the **target** is null, which costs Continent 7 rows and the other two none, giving per-target survivor counts of {62,118,120} against {63,117,120}. Brute force confirms (48,73,67) is the unique decomposition and only at 188. The guard was kept because it is independently correct; its comment no longer cites 189-vs-188 as evidence of anything.
+
+**What is left, unchanged from the list above except that filtering is struck:** batched traces for the intervention runner, and the bootstrap over the three counterfactual types for the interval control. **[T-018] is no longer blocked on the filter.** It remains gated on the open Full Vector / DAS judgement call, which is a question about what the card should measure and not about what can be run.
+
+**The gradient blocker moved, and still does not reach this card.** As of 2026-11-28 NDIF refuses backward passes for untrusted requests — a sandbox with no computation graph, not `OutOfOrderError` — see [E-047]'s note of that date. This card is forward-only, so it is unaffected either way; recorded here so the next reader does not re-check it. The client is now pinned to nnsight **0.8.4**, matching the server, verified not to move any local number.
+
 **1. WHERE WE ARE.**
 This project closed negative: the coefficient detects contamination, not propagation (C-001, C-002). Every edit here and in edit-slice is delivered at Llama-3.1-8B **layer 5**, on the subject's **last token** — a choice inherited from ROME and never tested in either project. MIB's RAVEL task (Mueller et al., ICML 2025, arXiv 2504.13151, Table 3g) measures where that same model holds a city's **country, continent and language**, at the last token of the city, at every layer. Its best method, DAS, scores **75 / 58 / 63** IIA averaged over layers and **83 / 64 / 70** at its best layer.
 
