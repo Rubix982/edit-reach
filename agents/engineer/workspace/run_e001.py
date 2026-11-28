@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from editreach.arch import key_site                              # noqa: E402
 from editreach.coefficient import Regime, coefficient_for        # noqa: E402
-from editreach.data import load_counterfact                      # noqa: E402
+from editreach.data import edit_slice_root, load_counterfact  # noqa: E402
 from editreach.logs import setup                                 # noqa: E402
 from editreach.remote import connect, encode_prompts, quiet_stdout, retrying  # noqa: E402
 from editreach.rome import LAYER, subject_last_index             # noqa: E402
@@ -237,8 +237,9 @@ def bootstrap_ci(xs: list[float], ys: list[float], *, n: int = BOOTSTRAP,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--probes", type=Path, default=Path("probes/generated.json"))
-    ap.add_argument("--edit-slice", type=Path,
-                    default=Path(__file__).resolve().parents[4] / "edit-slice")
+    # `parents[4] / "edit-slice"` was the old sibling layout. Resolved rather
+    # than assumed now; `--edit-slice` and EDITSLICE_ROOT both still override.
+    ap.add_argument("--edit-slice", type=Path, default=edit_slice_root())
     ap.add_argument("--layer", type=int, default=LAYER)
     ap.add_argument("--batch", type=int, default=200)
     ap.add_argument("--out", type=Path, default=Path("results/E-001-predicted-vs-measured.json"))

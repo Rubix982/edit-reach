@@ -23,7 +23,8 @@ sys.path.insert(0, str(ROOT / "agents" / "engineer" / "workspace"))
 import run_e001 as R1                                             # noqa: E402
 import run_e003 as R3                                             # noqa: E402
 
-EDIT_SLICE = ROOT.parent / "edit-slice"
+from editreach.data import edit_slice_root  # noqa: E402
+EDIT_SLICE = edit_slice_root()
 
 
 def main() -> int:

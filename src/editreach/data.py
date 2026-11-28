@@ -75,6 +75,44 @@ def default_counterfact() -> Path:
     return found
 
 
+#: edit-slice has lived at two paths: `~/code/edit-slice`, and then under
+#: `open-concept-lab/ai/`. Two places still assumed the first -- `run_e001.py`
+#: via `parents[4]` and `dryrun_e003.py` via `ROOT.parent` -- and both failed
+#: with a FileNotFoundError naming a directory that has not existed for months.
+#: The same mistake, in editscreen's `test_shim.py`, was worse: it sat behind a
+#: `skipif`, so three tests SKIPPED on every run and the suite still said green.
+#: One resolver, so the next move updates one list.
+EDIT_SLICE_ENV_VAR: Final[str] = "EDITSLICE_ROOT"
+
+
+def edit_slice_root(start: Path | None = None) -> Path:
+    """Where edit-slice is, found explicitly rather than assumed.
+
+    `EDITSLICE_ROOT` wins; otherwise the known layouts are tried in order.
+    Raises rather than returning a path that does not exist, naming every
+    candidate it tried -- a resolver that fails silently is how the skipped
+    shim tests happened.
+    """
+    env = os.environ.get(EDIT_SLICE_ENV_VAR)
+    if env:
+        p = Path(env).expanduser()
+        if not p.is_dir():
+            raise FileNotFoundError(f"{EDIT_SLICE_ENV_VAR}={env!r} is not a directory")
+        return p
+    base = (start or Path(__file__).resolve().parents[2]).resolve()
+    candidates = [
+        base.parent / "edit-slice",                              # siblings
+        base.parent / "open-concept-lab" / "ai" / "edit-slice",  # current layout
+    ]
+    for c in candidates:
+        if c.is_dir():
+            return c
+    raise FileNotFoundError(
+        "edit-slice not found at any of " + ", ".join(str(c) for c in candidates)
+        + f". Set {EDIT_SLICE_ENV_VAR} to its directory."
+    )
+
+
 class IntegrityError(RuntimeError):
     """Raised when pinned data does not match its recorded checksum."""
 
