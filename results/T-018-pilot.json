@@ -1,0 +1,29 @@
+{
+ "target": "Continent",
+ "kind": "prompt_template_counterfactual",
+ "layer": 5,
+ "built": 300,
+ "tally": {
+  "n": 300,
+  "base_ok": 238,
+  "source_ok": 245,
+  "both_ok": 189
+ },
+ "balanced": 96,
+ "result": {
+  "n": 96,
+  "iia": 0.5104166666666666,
+  "unintervened": 0.625,
+  "batch": 120,
+  "tokens": 6,
+  "layer": 5
+ },
+ "seconds": {
+  "filter": 195.0277600288391,
+  "score": 103.53688192367554
+ },
+ "extrapolated_hours": 8.77051995396614,
+ "batch": 120,
+ "tokens": 6,
+ "model": "meta-llama/Llama-3.1-8B"
+}
