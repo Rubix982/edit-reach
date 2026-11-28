@@ -48,6 +48,29 @@ print(cs[0].against(floor))
 # preceded @ L5: 0.982 against a different subject floor of 0.067, margin +0.915
 ```
 
+## Where the model runs
+
+`connect` defaults to NDIF, which is what every recorded number here was measured
+against. It is a default, not a requirement:
+
+```python
+connect("meta-llama/Llama-3.1-8B")                      # NDIF; needs NNSIGHT_API_KEY
+connect("gpt2", backend="local")                        # in-process, no key, no network
+connect("meta-llama/Llama-3.1-8B", host="https://...")  # any NDIF-compatible instance
+```
+
+None of the intervention code changes between these. That is nnsight's design
+rather than ours — the same trace body runs either side of the wire and only
+`remote=` differs. Call sites get that flag from `uses_remote(model)` instead of
+hardcoding it, so a handle built for one backend cannot be traced against the
+other by accident.
+
+**What a backend has to provide is activations.** These measurements read and
+write hidden states partway through a forward pass. A chat-completions endpoint
+cannot do that at any price, so there is no key you can set to point this at
+OpenAI or Anthropic — the limit is in the measurement, not in the plumbing. Local
+weights, a self-hosted NDIF, or a cluster you have access to all work.
+
 `against(floor)` is not optional sugar. `Reading` cannot be built without a
 baseline, because a coefficient of 1.000 is almost content-free on its own — a
 pipeline hard-wired to return 1 produces the same number. What makes it mean

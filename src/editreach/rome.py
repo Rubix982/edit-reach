@@ -33,7 +33,8 @@ import torch
 
 from .arch import key_site
 from .remote import (BACKOFF_S, FLAKY_BACKOFF_S, MAX_ATTEMPTS,
-                    _is_flaky_remote, _is_transport_error, retrying)
+                    _is_flaky_remote, _is_transport_error, retrying,
+                    uses_remote)
 
 log: Final[logging.Logger] = logging.getLogger("edit")
 
@@ -127,7 +128,7 @@ def read_key_and_value(model, prompt: str, subject: str, layer: int = LAYER
     dp = key_site(model, layer)
 
     def once():
-        with model.trace(prompt, remote=True):
+        with model.trace(prompt, remote=uses_remote(model)):
             k = dp.input[0, idx].save()
             v = dp.output[0, idx].save()
         return k.float().cpu(), v.float().cpu()
@@ -153,7 +154,7 @@ APPLY_IDIOM: Final[str] = """
     from editreach.arch import key_site         # OUTSIDE the trace
     lay, ks_cpu, dv_cpu = e.unpack()            # OUTSIDE the trace
     dp = key_site(model, lay)                   # OUTSIDE the trace
-    with model.trace(prompt, remote=True):
+    with model.trace(prompt, remote=uses_remote(model)):
         k = dp.input
         ks = ks_cpu.to(k.device, k.dtype)
         dp.output = dp.output + ((k @ ks) / (ks @ ks)).unsqueeze(-1) \
@@ -210,14 +211,14 @@ def compute_v(model, prompt: str, subject: str, target: str, *,
     last_ess = len(ids_ess) - 1
 
     # Pre-edit distribution on the essence prompt, for the KL anchor. One trace.
-    with model.trace(batch, remote=True):
+    with model.trace(batch, remote=uses_remote(model)):
         ref_logits = model.lm_head.output[1, last_ess].float().save()
     ref_logp = torch.log_softmax(ref_logits.cpu(), -1)
 
     losses: list[float] = []
     dp = key_site(model, layer)                 # OUTSIDE the trace, as above
     for step in range(steps):
-        with model.trace(batch, remote=True):
+        with model.trace(batch, remote=uses_remote(model)):
             out = dp.output
             out.requires_grad_(True)
             out.retain_grad()
@@ -317,7 +318,7 @@ def compute_v_batch(model, specs: list[EditSpec], *, layer: int = LAYER,
     # unprotected trace has been found by a dead run, exactly as `retrying`'s own
     # docstring predicts: the ad-hoc version has been wrong by omission every time.
     def _ref_once():
-        with model.trace(batch, remote=True):
+        with model.trace(batch, remote=uses_remote(model)):
             out = model.lm_head.output.float().save()
         return out
 
@@ -379,7 +380,7 @@ def _grad_step(model, batch, meta, D, layer, ref_logp, kl_factor, weight_decay):
     """
     dp = key_site(model, layer)                 # OUTSIDE the trace, as above
     if True:
-        with model.trace(batch, remote=True):
+        with model.trace(batch, remote=uses_remote(model)):
             out = dp.output
             out.requires_grad_(True)
             out.retain_grad()

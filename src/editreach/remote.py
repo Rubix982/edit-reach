@@ -1,13 +1,19 @@
-"""NDIF-backed scoring for models too large to hold locally.
+"""White-box scoring for models too large to hold locally.
 
-`probing.py` runs models locally. This runs them on NDIF via nnsight, which has a
+`probing.py` runs models locally. This runs them through nnsight, which has a
 different cost shape: compute is trivial (sub-second on Llama-70B) but each remote
 trace carries ~10-15s of queue and transfer. So the unit of work is a BATCH — all
 candidate continuations for an item are scored in one round trip, and the
 log-probs are gathered remotely so only scalars come back over the wire, never a
 128k-vocab logit tensor.
 
-Requires NNSIGHT_API_KEY in the environment (from login.ndif.us).
+The default backend is NDIF, which requires NNSIGHT_API_KEY in the environment
+(from login.ndif.us). It is not the only option: `connect(backend="local")` loads
+the weights in-process, and `connect(host=...)` points the same code at any
+NDIF-compatible instance. Whatever it points at must expose activations --
+`trace` reads and writes hidden states mid-forward-pass, which a chat-completions
+API cannot do at any price. That is a property of the measurement, not of this
+module.
 """
 
 from __future__ import annotations
@@ -20,6 +26,7 @@ import signal
 import threading
 import time
 from typing import Final
+from weakref import WeakKeyDictionary
 
 import torch
 from nnsight import CONFIG, LanguageModel
@@ -184,25 +191,89 @@ def quiet_stdout():
 LOADERS: Final[tuple[str, ...]] = ("language", "transformers")
 
 
-def connect(model_name: str = DEFAULT_MODEL, *, loader: str = "language"):
-    """A remote model handle. `loader` selects which nnsight class builds it.
+BACKENDS: Final[tuple[str, ...]] = ("ndif", "local")
 
-    `"language"` is `LanguageModel`, deprecated and still the baseline for every
-    recorded number. `"transformers"` is `TransformersModel(..., task=
-    "text-generation")`, its replacement. They are kept switchable rather than
-    swapped because a loader change that moves activations is a re-baseline, and
-    a re-baseline that looks like an upgrade is the expensive kind.
+#: Which backend built each handle, so callers can ask rather than assume.
+#: Weak keys: this must never be the reason a model stays alive. A handle that
+#: is NOT in here reads as remote, because every number recorded in this repo
+#: and in edit-slice was produced against NDIF, and a script that built its own
+#: `LanguageModel` was talking to NDIF too. Defaulting the other way would
+#: silently change what old code does.
+_BACKEND_OF: "WeakKeyDictionary[object, str]" = WeakKeyDictionary()
+
+
+def uses_remote(model: object) -> bool:
+    """Should `model.trace(...)` be called with `remote=True`?
+
+    Ask this instead of hardcoding. A handle built outside `connect` is treated
+    as remote -- see `_BACKEND_OF` for why that is the safe default rather than
+    the convenient one.
+    """
+    try:
+        return _BACKEND_OF.get(model, "ndif") != "local"
+    except TypeError:
+        # Not weak-referenceable, so it was never recorded. This is asked from
+        # inside run loops; raising here would kill a run over bookkeeping.
+        return True
+
+
+def connect(model_name: str = DEFAULT_MODEL, *, loader: str = "language",
+            backend: str = "ndif", host: str | None = None):
+    """A model handle. `backend` says where it runs, `loader` which class builds it.
+
+    `backend="ndif"` (the default) runs traces on NDIF and needs NNSIGHT_API_KEY.
+    `backend="local"` loads the weights in-process instead: no key, no network,
+    and the caller's machine has to hold the model. `host` points at any
+    NDIF-compatible instance -- a self-hosted one, or a lab's -- and implies a
+    remote backend; a key is sent if one is set and is not required, because a
+    private instance need not want one.
+
+    Nothing about the trace bodies changes between these. That is nnsight's
+    design, not ours: the same intervention code runs either side of the wire,
+    and only `remote=` differs. Callers get that flag from `uses_remote(model)`.
+
+    `loader` is a separate axis. `"language"` is `LanguageModel`, deprecated and
+    still the baseline for every recorded number. `"transformers"` is
+    `TransformersModel(..., task="text-generation")`, its replacement. They are
+    kept switchable rather than swapped because a loader change that moves
+    activations is a re-baseline, and a re-baseline that looks like an upgrade is
+    the expensive kind.
     """
     if loader not in LOADERS:
         raise ValueError(f"loader must be one of {LOADERS}, not {loader!r}")
+    if backend not in BACKENDS:
+        raise ValueError(f"backend must be one of {BACKENDS}, not {backend!r}")
+    if host is not None and backend == "local":
+        raise ValueError(
+            "host= points at a remote instance and backend='local' runs in "
+            "process; they cannot both be meant. Drop one.")
+
     key = os.environ.get("NNSIGHT_API_KEY")
-    if not key:
-        raise RuntimeError("NNSIGHT_API_KEY not set — get one from login.ndif.us")
-    CONFIG.set_default_api_key(key)
+    if host is not None:
+        CONFIG.API.HOST = host
+        if key:
+            CONFIG.set_default_api_key(key)
+    elif backend == "ndif":
+        if not key:
+            raise RuntimeError(
+                "NNSIGHT_API_KEY not set — get one from login.ndif.us, or pass "
+                "backend='local' to load the weights here, or host=... to use "
+                "another instance")
+        CONFIG.set_default_api_key(key)
+
     if loader == "language":
-        return LanguageModel(model_name)
-    from nnsight import TransformersModel
-    return TransformersModel(model_name, task="text-generation")
+        model = LanguageModel(model_name)
+    else:
+        from nnsight import TransformersModel
+        model = TransformersModel(model_name, task="text-generation")
+    try:
+        _BACKEND_OF[model] = backend
+    except TypeError:
+        # Not weak-referenceable. `uses_remote` then falls back to its default,
+        # which is the behaviour this module had before backends existed.
+        log.warning("cannot record backend for %r; uses_remote will assume remote",
+                    type(model).__name__)
+    return model
 
 
 def _encode_pairs(model: LanguageModel, pairs: list[tuple[str, str]]
@@ -374,7 +445,7 @@ def score_pairs(model: LanguageModel, pairs: list[tuple[str, str]],
             # `pos_gain` restores the magnitude a mask removed, so position can be tested
             # independently of how much coefficient mass the mask happened to delete.
             pos_mask = pos_mask * pos_gain
-            with quiet_stdout(), model.trace(ids, remote=True):
+            with quiet_stdout(), model.trace(ids, remote=uses_remote(model)):
                 if lay is not None:
                     dp = model.model.layers[lay].mlp.down_proj
                     kk = dp.input
