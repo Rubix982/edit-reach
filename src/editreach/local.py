@@ -15,17 +15,52 @@ one alone (CLAUDE.md, "Metrics and experimental hygiene").
 from __future__ import annotations
 
 import functools
+import logging
+import os
 from dataclasses import dataclass
 from typing import Final
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 
-DEVICE: Final[str] = (
-    "mps" if torch.backends.mps.is_available()
-    else "cuda" if torch.cuda.is_available()
-    else "cpu"
-)
+log: Final[logging.Logger] = logging.getLogger("local")
+
+#: MPS is NOT auto-selected, and that is the whole point of this function.
+#: Apple's Metal backend has a documented class of SILENT wrong answers -- no
+#: exception, no NaN, just a different number. TransformerLens declines to
+#: auto-select it for this reason and, as of 2026-11-28, names no torch version
+#: it considers safe (`_MPS_MIN_SAFE_TORCH_VERSION = None`, "MPS silent
+#: correctness issues are known in PyTorch <= 2.7"). The case behind their
+#: policy: GPT-2 small on the IOI prompt gives a logit difference of +3.36 on
+#: CPU and -0.99 on MPS, sign flipped, and the reporter ran about a hundred
+#: patching experiments before noticing.
+#:
+#: nnsight has no MPS guardrails at all, so this package was auto-selecting a
+#: backend no neighbouring library trusts. CPU is slower and gives the number
+#: the paper claims. Opt in with EDITREACH_ALLOW_MPS=1 if you want it, and gate
+#: anything you report on a CPU parity check.
+def pick_device(explicit: str | None = None) -> str:
+    """Where tensors go. `EDITREACH_DEVICE` overrides everything."""
+    if explicit:
+        return explicit
+    env = os.environ.get("EDITREACH_DEVICE")
+    if env:
+        return env
+    if torch.cuda.is_available():
+        return "cuda"
+    if torch.backends.mps.is_available():
+        if os.environ.get("EDITREACH_ALLOW_MPS") == "1":
+            log.warning(
+                "using MPS because EDITREACH_ALLOW_MPS=1. Metal has a known "
+                "class of silently wrong results; check any reported number "
+                "against cpu before believing it.")
+            return "mps"
+        log.info("MPS is available and not used; set EDITREACH_ALLOW_MPS=1 to "
+                 "opt in, or EDITREACH_DEVICE=mps to force it.")
+    return "cpu"
+
+
+DEVICE: Final[str] = pick_device()
 
 
 @dataclass(frozen=True)
@@ -94,9 +129,12 @@ class Possession:
 
 
 @functools.lru_cache(maxsize=4)
-def load(name: str) -> tuple[PreTrainedModel, PreTrainedTokenizerBase]:
+def load(name: str, device: str | None = None) -> tuple[PreTrainedModel, PreTrainedTokenizerBase]:
+    """`device` beats EDITREACH_DEVICE beats the default. Part of the cache key,
+    so the same name on two devices is two entries rather than a silent reuse --
+    which is exactly what a cpu-vs-mps parity check needs."""
     tok = AutoTokenizer.from_pretrained(name)
-    model = AutoModelForCausalLM.from_pretrained(name, dtype=torch.float32).to(DEVICE)
+    model = AutoModelForCausalLM.from_pretrained(name, dtype=torch.float32).to(pick_device(device))
     model.eval()
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
@@ -109,7 +147,7 @@ def score(model: PreTrainedModel, tok: PreTrainedTokenizerBase, prompt: str, con
     cont = continuation if continuation.startswith(" ") else " " + continuation
     p_ids = tok(prompt, return_tensors="pt").input_ids
     c_ids = tok(cont, return_tensors="pt", add_special_tokens=False).input_ids
-    ids = torch.cat([p_ids, c_ids], dim=1).to(DEVICE)
+    ids = torch.cat([p_ids, c_ids], dim=1).to(model.device)
 
     logits = model(ids).logits[0].float()
     logprobs = torch.log_softmax(logits, dim=-1)
@@ -123,7 +161,7 @@ def score(model: PreTrainedModel, tok: PreTrainedTokenizerBase, prompt: str, con
 
 @torch.no_grad()
 def top1(model: PreTrainedModel, tok: PreTrainedTokenizerBase, prompt: str, max_new: int = 4) -> str:
-    ids = tok(prompt, return_tensors="pt").input_ids.to(DEVICE)
+    ids = tok(prompt, return_tensors="pt").input_ids.to(model.device)
     out = model.generate(ids, max_new_tokens=max_new, do_sample=False,
                          pad_token_id=tok.pad_token_id)
     return tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True)
