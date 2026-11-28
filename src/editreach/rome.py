@@ -213,7 +213,16 @@ def compute_v(model, prompt: str, subject: str, target: str, *,
     # Pre-edit distribution on the essence prompt, for the KL anchor. One trace.
     with model.trace(batch, remote=uses_remote(model)):
         ref_logits = model.lm_head.output[1, last_ess].float().save()
-    ref_logp = torch.log_softmax(ref_logits.cpu(), -1)
+    # `.detach()` because this is an ANCHOR: the KL term measures movement away
+    # from the pre-edit distribution, which is a constant, and differentiating
+    # through it would be wrong even where it is possible. It was invisible
+    # remotely -- NDIF returns `.save()`d values as plain data, already detached
+    # -- so the local backend is what exposed it. Without this, step 2 of the
+    # loop dies with "Trying to backward through the graph a second time": the
+    # first `.backward()` frees the graph behind `ref_logits`, which `ref_logp`
+    # is still holding. No recorded number moves; detaching an already-detached
+    # tensor is a no-op, and every number in this repo was measured remotely.
+    ref_logp = torch.log_softmax(ref_logits.detach().cpu(), -1)
 
     losses: list[float] = []
     dp = key_site(model, layer)                 # OUTSIDE the trace, as above
